@@ -65,55 +65,12 @@ void Server::launch()
 			}
 			if (valread != 0 && strncmp(buff, "JOIN", 4) == 0) // changer le strncmp
 			{
-				// faire un check si le channel existe deja si oui on le rejoins si non on le cree
-				std::string test = &buff[5];
-				std::string nameChannel = test.substr(0, test.size() - 2);
-				//std::cout << "NAME CHANNEL = " << nameChannel << "!\n";
-				std::list<User *>::iterator usrIt = StaticFunctions::findByFd(_users, _socket[i]);
-				if (usrIt == _users.end())
-					std::cerr << "Error users not found to add to a channel, shouldn't come here" << std::endl;
-				std::list<Channel *>::iterator it = _channels.begin();
-				for (; it != _channels.end(); ++it)
-				{
-					if (*it == nameChannel)
-					{
-						StaticFunctions::SendToFd(_socket[i], "You joined channel ", nameChannel, 0);
-						(*it)->addUser(*usrIt);
-						break;
-					}
-				}
-				if (it == _channels.end())
-				{
-					//std::cout << "You created and joined channel " << &buff[6];
-					Channel *c = new Channel(_channelNumber,  nameChannel, *usrIt);
-					_channelNumber++;
-					_channels.push_back(c);
-					it--;
-				}
-				std::string message = ":" + (*usrIt)->getUserNickname() + " JOIN " + (*it)->getName() + "\r\n"; 
-				send(_socket[i], message.c_str(), message.size(), 0);
-            	std::memset(buff, 0, 1024);
+				joinChannel(buff, i);
+				std::memset(buff, 0, 1024);
 			}
-			else if (valread != 0 && strncmp(buff, "PASS", 4) == 0)//StaticFunctions::checkMode(buff, "PASS", 0) == 0)//strncmp(buff, "PASS", 4) == 0)
+			else if (valread != 0 && strncmp(buff, "PASS", 4) == 0)
 			{
-				// faire un check si il a deja rentre le mot de passe
-				if (strncmp(&buff[5], _password.c_str(), _password.size()) == 0)
-				{
-					//send(_socket[i], "Password OK\r\nNow authenticate you with /NICK /USER\r\n", 52, 0);
-					StaticFunctions::SendToFd(_socket[i], "Password OK\r\n", "Now authenticate you with /NICK /USER", 0);
-					std::list<User *>::iterator it = _users.end();
-					int id;
-					if (_users.end() != _users.begin())
-					{
-						it--;
-						id = (*it)->getIdUser();
-					}
-					else
-						id = 0;
-					_users.push_back(new User(id, "", "",_socket[i])); // ajouter le nickname
-				}
-				else
-					StaticFunctions::SendToFd(_socket[i], ":Password incorrect", "", 0);
+				checkPass(buff, i);
 				std::memset(buff, 0, 1024);
 			}
 			else if (valread != 0 && strncmp(buff, "NICK", 4) == 0)
@@ -139,6 +96,7 @@ void Server::launch()
 				std::string test = &buff[5];
 				std::string nick = test.substr(0, test.size() - 2);
 				(*it)->setUserNickname(nick);
+				std::memset(buff, 0, 1024);
 			}
 			else if (valread != 0 && strncmp(buff, "USER", 4) == 0)
 			{
@@ -160,7 +118,8 @@ void Server::launch()
 				std::string username = test.substr(0, test.size() - 2);
 				(*it)->setUsernameUser(username);
 				std::cout << "New client: " << (*it)->getUserFd() << " " << (*it)->getUsernameUser() << " " << (*it)->getUserNickname() << std::endl;
-				//send(_socket[i], "You are now authenticated you can join or create a channel\n", 60, 0);
+				std::memset(buff, 0, 1024);
+
 			}
 			else if (valread != 0 && strcmp(buff, "END\r\n") == 0)
 			{
@@ -216,6 +175,57 @@ void Server::launch()
 			std::memset(buff, 0, 1024);
 		}
 	}
+}
+
+void Server::checkPass(char *buff, int i)
+{
+	// faire un check si il a deja rentre le mot de passe
+	if (strncmp(&buff[5], _password.c_str(), _password.size()) == 0)
+	{
+		//send(_socket[i], "Password OK\r\nNow authenticate you with /NICK /USER\r\n", 52, 0);
+		StaticFunctions::SendToFd(_socket[i], "Password OK\r\n", "Now authenticate you with /NICK /USER", 0);
+		std::list<User *>::iterator it = _users.end();
+		int id;
+		if (_users.end() != _users.begin())
+		{
+			it--;
+			id = (*it)->getIdUser();
+		}
+		else
+			id = 0;
+		_users.push_back(new User(id, "", "",_socket[i])); // ajouter le nickname
+	}
+	else
+		StaticFunctions::SendToFd(_socket[i], ":Password incorrect", "", 0);
+}
+
+
+void Server::joinChannel(char *buff, int i)
+{
+	std::string test = &buff[5];
+	std::string nameChannel = test.substr(0, test.size() - 2);
+	std::list<User *>::iterator usrIt = StaticFunctions::findByFd(_users, _socket[i]);
+	if (usrIt == _users.end())
+		std::cerr << "Error users not found to add to a channel, shouldn't come here" << std::endl;
+	std::list<Channel *>::iterator it = _channels.begin();
+	for (; it != _channels.end(); ++it)
+	{
+		if (*it == nameChannel)
+		{
+			StaticFunctions::SendToFd(_socket[i], "You joined channel ", nameChannel, 0);
+			(*it)->addUser(*usrIt);
+			break;
+		}
+	}
+	if (it == _channels.end())
+	{
+		Channel *c = new Channel(_channelNumber,  nameChannel, *usrIt);
+		_channelNumber++;
+		_channels.push_back(c);
+		it--;
+	}
+	std::string message = ":" + (*usrIt)->getUserNickname() + " JOIN " + (*it)->getName() + "\r\n"; 
+	send(_socket[i], message.c_str(), message.size(), 0);
 }
 
 fd_set Server::addNewSocket()

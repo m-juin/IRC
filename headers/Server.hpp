@@ -29,6 +29,10 @@ class Server {
 		void launch();
 		void closeAllSocket();
 		fd_set addNewSocket();
+
+		void joinChannel(char *buff, int i);
+		void checkPass(char *buff, int i);
+
 	private:
         std::list<Channel*>		_channels;
 		std::list<User *>		_users;
