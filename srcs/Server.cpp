@@ -113,7 +113,7 @@ void Server::launch()
 					_users.push_back(new User(id, "", "",_socket[i])); // ajouter le nickname
 				}
 				else
-					send(_socket[i], "Bad password\r\n", 15, 0);
+					StaticFunctions::SendToFd(_socket[i], ":Password incorrect", "", 0);
 				std::memset(buff, 0, 1024);
 			}
 			else if (valread != 0 && strncmp(buff, "NICK", 4) == 0)
@@ -192,33 +192,21 @@ void Server::launch()
 						}
 					}
 					value = value.substr(0, value.size() - j);
-					//std::cout << "value = "<< value << std::endl;
 					Channel * myChan = getChannel(value);
 					if (myChan == NULL)
 						return ;
-					//std::cout << "trouver chan" << std::endl;
-					
-					//k = 0;
-					//while (message[k] != ':')
-					//{
-					//	k++;
-					//}
-					//message = &buff[k];
 					std::list<User *> usr = myChan->getUsers();
 					std::list<User *>::iterator it = usr.begin();
 					std::string buffer;
 					for (; it != usr.end(); ++it)
 					{
-						//std::cout << "Envoie de message : " << message << std::endl;
-						//itoa ((*it)->getUserFd(), buffer.c_str(), 10);
-						std::stringstream buf;
-						buf << (*it)->getUserFd();
-						buf >> buffer;
-						std::string test = &buff[8];
-						std::string mess = test.substr(0, test.size() - 2);
-						std::string message = ":" + buffer + " PRIVMSG " + mess + "\r\n";
-						send((*it)->getUserFd(), message.c_str(), message.size(), 0);
-						//send(_socket[i + 1], "BONJOUR\r\n", 11, 0);
+						if (_socket[i] != (*it)->getUserFd())
+						{
+							std::string test = &buff[8];
+							std::string mess = test.substr(0, test.size() - 2);
+							std::string message = ":" + (*it)->getUserNickname() + " PRIVMSG " + mess + "\r\n";
+							send((*it)->getUserFd(), message.c_str(), message.size(), 0);
+						}
 					}
 					
 				}
@@ -272,7 +260,6 @@ fd_set Server::addNewSocket()
 						{
 							_socket[i] = newSocket;
 							StaticFunctions::SendToFd(_socket[i], "Enter password with /PASS <pass>", "", 0);
-//							send(_socket[i], "Enter password with /PASS <pass>\r\n", 35, 0);
 							break ;
 						}
 					}
