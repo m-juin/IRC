@@ -103,7 +103,6 @@ void Server::launch()
 				// check si le user a tape le mot de passe
 				// on ne peut pas changer son user name
 				std::list<User *>::iterator it = _users.begin();
-				//std::cout << (*it)->getIdUser() << std::endl;
 				for (; it != _users.end(); it++)
 				{
 					if (_socket[i] == (*it)->getUserFd())
@@ -129,9 +128,6 @@ void Server::launch()
 			}
 			else if (valread != 0)
 			{
-				//std::list<User *>::iterator usrIt = StaticFunctions::findByFd(_users, _socket[i]);
-				//if (usrIt == _users.end())
-				//	std::cerr << "Error users not found to add to a channel, shouldn't come here" << std::endl;
 				if (buff[8] == '#')
 				{
 					int k = 0;
@@ -169,7 +165,6 @@ void Server::launch()
 					}
 					
 				}
-				//std::cout << buff;
             	std::memset(buff, 0, 1024);
 			}
 			std::memset(buff, 0, 1024);
@@ -182,7 +177,6 @@ void Server::checkPass(char *buff, int i)
 	// faire un check si il a deja rentre le mot de passe
 	if (strncmp(&buff[5], _password.c_str(), _password.size()) == 0)
 	{
-		//send(_socket[i], "Password OK\r\nNow authenticate you with /NICK /USER\r\n", 52, 0);
 		StaticFunctions::SendToFd(_socket[i], "Password OK\r\n", "Now authenticate you with /NICK /USER", 0);
 		std::list<User *>::iterator it = _users.end();
 		int id;
@@ -193,7 +187,7 @@ void Server::checkPass(char *buff, int i)
 		}
 		else
 			id = 0;
-		_users.push_back(new User(id, "", "",_socket[i])); // ajouter le nickname
+		_users.push_back(new User(id, "", "",_socket[i]));
 	}
 	else
 		StaticFunctions::SendToFd(_socket[i], ":Password incorrect", "", 0);
