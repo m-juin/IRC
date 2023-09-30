@@ -1,4 +1,5 @@
 #include "Parser.hpp"
+#include <cstring>
 
 Command getCmdEnum(std::string arg)
 {
@@ -14,19 +15,18 @@ Command getCmdEnum(std::string arg)
 	
 }
 
+
+
 Parser::Parser(std::list<User *> usrs, int fd, std::string fullCmd)
 {
 	fullCmd = fullCmd.substr(0, fullCmd.size() - 2);
+	std::cout << fullCmd << std::endl;
 	if (fullCmd.size() < 3)
 	{
 		std::cerr << "Unknown command: \"" << fullCmd << "\"\n";
 		return;
 	}
-	std::stringstream ss(fullCmd);
-	std::istream_iterator<std::string> begin(ss);
-	std::istream_iterator<std::string> end;
-	std::vector<std::string> vstrings(begin, end);
-	std::copy(vstrings.begin(), vstrings.end(), std::ostream_iterator<std::string>(std::cout, "\n"));
+	std::vector<std::string> vstrings = SplitCmd(fullCmd, " ");
 	if (vstrings.size() < 1)
 	{
 		std::cerr << "Unknown command: \"" << fullCmd << "\"\n";
@@ -38,6 +38,34 @@ Parser::Parser(std::list<User *> usrs, int fd, std::string fullCmd)
 		std::cerr << "Unknown command: \"" << vstrings[0] << "\"\n";
 		return;
 	}
+	else if (cmd == 3)
+	{
+		std::vector<std::string> tmp;
+		std::vector<std::string>::iterator it = vstrings.begin();
+		std::vector<std::string>::iterator ite = vstrings.end();
+		while (++it != ite)
+		{
+			tmp = SplitCmd(*it, ",");
+			std::vector<std::string>::iterator it2 = tmp.begin();
+			std::vector<std::string>::iterator ite2 = tmp.end();
+			while (it2 != ite2)
+			{
+				args.push_back(*it2);
+				std::cout << "tmp = " << *it2 << std::endl;
+				it2++;
+			}
+		}
+	}
+	else
+	{
+		std::vector<std::string>::iterator it = vstrings.begin();
+		std::vector<std::string>::iterator ite = vstrings.end();
+		while (it != ite)
+		{
+			args.push_back(*it);
+			it++;
+		}
+	}
 	std::list<User *>::iterator usrIt = StaticFunctions::findByFd(usrs, fd);
 	if (usrIt == usrs.end())
 	{
@@ -45,20 +73,33 @@ Parser::Parser(std::list<User *> usrs, int fd, std::string fullCmd)
 		return;
 	}
 	op = *usrIt;
-	std::vector<std::string>::iterator it = vstrings.begin();
-	std::vector<std::string>::iterator ite = vstrings.end();
-	while (++it != ite)
+}
+
+std::vector<std::string>::iterator Parser::GetJoinPasswords()
+{
+
+	std::size_t length = args.size() / 2;
+	if (length == 0)
 	{
-		args.push_back(*it);
+		std::cerr << "Error, No argument\n";
+		return args.begin();
 	}
-	std::cout << "User = " << op->getNickname() << ".\nCommand = " << cmd << ".\nArgs = ";
-	it = args.begin();
-	ite = args.end();
-	while (it != ite)
-	{
-		std::cout << *it << std::endl;
+	std::vector<std::string>::iterator it = args.begin();
+	for (std::size_t i = 0; i < length; i++)
 		it++;
-	}
+	return it;
+}
+
+std::vector<std::string> Parser::SplitCmd(std::string str, const char *cs)
+{
+	std::vector<std::string> Parsed;
+	char *token = strtok((char *)(str.c_str)(), cs);
+    while (token != NULL)
+    {
+        Parsed.push_back(std::string(token));
+        token = strtok(NULL, cs);
+    }
+	return Parsed;
 }
 
 Parser::Parser()
