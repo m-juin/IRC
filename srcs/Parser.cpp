@@ -15,8 +15,6 @@ Command getCmdEnum(std::string arg)
 	
 }
 
-
-
 Parser::Parser(std::list<User *> usrs, int fd, std::string fullCmd)
 {
 	fullCmd = fullCmd.substr(0, fullCmd.size() - 2);
@@ -42,19 +40,9 @@ Parser::Parser(std::list<User *> usrs, int fd, std::string fullCmd)
 	{
 		std::vector<std::string> tmp;
 		std::vector<std::string>::iterator it = vstrings.begin();
-		std::vector<std::string>::iterator ite = vstrings.end();
-		while (++it != ite)
-		{
-			tmp = SplitCmd(*it, ",");
-			std::vector<std::string>::iterator it2 = tmp.begin();
-			std::vector<std::string>::iterator ite2 = tmp.end();
-			while (it2 != ite2)
-			{
-				args.push_back(*it2);
-				std::cout << "tmp = " << *it2 << std::endl;
-				it2++;
-			}
-		}
+		args = SplitCmd(*++it, ",");
+		if (++it != vstrings.end())
+			args2 = SplitCmd(*it, ",");
 	}
 	else
 	{
@@ -75,28 +63,13 @@ Parser::Parser(std::list<User *> usrs, int fd, std::string fullCmd)
 	op = *usrIt;
 }
 
-std::vector<std::string>::iterator Parser::GetJoinPasswords()
-{
-
-	std::size_t length = args.size() / 2;
-	if (length == 0)
-	{
-		std::cerr << "Error, No argument\n";
-		return args.begin();
-	}
-	std::vector<std::string>::iterator it = args.begin();
-	for (std::size_t i = 0; i < length; i++)
-		it++;
-	return it;
-}
-
 std::vector<std::string> Parser::SplitCmd(std::string str, const char *cs)
 {
 	std::vector<std::string> Parsed;
 	char *token = strtok((char *)(str.c_str)(), cs);
     while (token != NULL)
     {
-        Parsed.push_back(std::string(token));
+        Parsed.push_back(static_cast<std::string>(token));
         token = strtok(NULL, cs);
     }
 	return Parsed;

@@ -17,8 +17,8 @@ struct Parser
 		~Parser();
 		Command cmd;
 		std::vector<std::string> args;
+		std::vector<std::string> args2;
 		User *op;
-		std::vector<std::string>::iterator GetJoinPasswords();
 	private:
 		std::vector<std::string> SplitCmd(std::string str, const char *cs);
 		Parser();
