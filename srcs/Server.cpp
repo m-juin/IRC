@@ -65,6 +65,7 @@ void Server::launch()
 			}
 			if (valread != 0 && strncmp(buff, "JOIN", 4) == 0)
 			{
+				//Check if pass is entered, username and nickname are set
 				if (isUserCorrectlyConnected(i) == false)
 				{
 					StaticFunctions::SendToFd(_socket[i], "You don't have permission to execute commands", "", 0);
@@ -86,6 +87,12 @@ void Server::launch()
 				std::list<User *>::iterator it = StaticFunctions::findByFd(_users, _socket[i]);
 				std::cout << (*it)->getId() << std::endl;
 				std::string test = &buff[5];
+				//Check if nickname is empty
+				if (test.size() == 0)
+				{
+					StaticFunctions::SendToFd(_socket[i], "Your nickname can't be empty", "", 0);
+					continue;
+				}
 				std::string nick = test.substr(0, test.size() - 2);
 				(*it)->setNickname(nick);
 				std::memset(buff, 0, 1024);
@@ -95,10 +102,28 @@ void Server::launch()
 				// check si le user a tape le mot de passe
 				// on ne peut pas changer son user name
 				if (isUserAuthenticated(i) == false)
-					continue	;
+					continue;
 				std::list<User *>::iterator it = StaticFunctions::findByFd(_users, _socket[i]);
+				//Check if username is already set, shouldn't do anything is this case
+				if ((*it)->getUsername().size() != 0)
+				{
+					StaticFunctions::SendToFd(_socket[i], "Your username is already set", "", 0);
+					continue;
+				}
+				//Check if nickname is set or not
+				if ((*it)->getNickname().size() == 0)
+				{
+					StaticFunctions::SendToFd(_socket[i], "Your nickname is not set", "", 0);
+					continue;
+				}
 				std::string test = &buff[5];
 				std::string username = test.substr(0, test.size() - 2);
+				//Check if username is empty
+				if (username.size() == 0)
+				{
+					StaticFunctions::SendToFd(_socket[i], "Your username can't be empty", "", 0);
+					continue;
+				}
 				(*it)->setUsername(username);
 				std::cout << "New client: " << (*it)->getFd() << " " << (*it)->getUsername() << " " << (*it)->getNickname() << std::endl;
 				std::memset(buff, 0, 1024);
