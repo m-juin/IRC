@@ -63,8 +63,13 @@ void Server::launch()
 				// A delete test Parser:
 				Parser Parsedcmd(_users, _socket[i], buff);
 			}
-			if (valread != 0 && strncmp(buff, "JOIN", 4) == 0) // changer le strncmp
+			if (valread != 0 && strncmp(buff, "JOIN", 4) == 0)
 			{
+				if (isUserCorrectlyConnected(i) == false)
+				{
+					StaticFunctions::SendToFd(_socket[i], "You don't have permission to execute commands", "", 0);
+					continue;
+				}
 				joinChannel(buff, i);
 				std::memset(buff, 0, 1024);
 			}
@@ -79,13 +84,13 @@ void Server::launch()
 				std::list<User *>::iterator it = _users.begin();
 				if (_users.begin() == _users.end())
 				{
-					std::cerr << "creation error user... quitting" << std::endl;
-					return	;
+					StaticFunctions::SendToFd(_socket[i], "You are not authenticated", "", 0);
+					continue;
 				}
-				std::cout << (*it)->getIdUser() << std::endl;
+				std::cout << (*it)->getId() << std::endl;
 				for (; it != _users.end(); it++)
 				{
-					if (_socket[i] == (*it)->getUserFd())
+					if (_socket[i] == (*it)->getFd())
 						break ;
 				}
 				if (it == _users.end())
@@ -95,7 +100,7 @@ void Server::launch()
 				}
 				std::string test = &buff[5];
 				std::string nick = test.substr(0, test.size() - 2);
-				(*it)->setUserNickname(nick);
+				(*it)->setNickname(nick);
 				std::memset(buff, 0, 1024);
 			}
 			else if (valread != 0 && strncmp(buff, "USER", 4) == 0)
@@ -105,7 +110,7 @@ void Server::launch()
 				std::list<User *>::iterator it = _users.begin();
 				for (; it != _users.end(); it++)
 				{
-					if (_socket[i] == (*it)->getUserFd())
+					if (_socket[i] == (*it)->getFd())
 						break ;
 				}
 				if (it == _users.end())
@@ -115,8 +120,8 @@ void Server::launch()
 				}
 				std::string test = &buff[5];
 				std::string username = test.substr(0, test.size() - 2);
-				(*it)->setUsernameUser(username);
-				std::cout << "New client: " << (*it)->getUserFd() << " " << (*it)->getUsernameUser() << " " << (*it)->getUserNickname() << std::endl;
+				(*it)->setUsername(username);
+				std::cout << "New client: " << (*it)->getFd() << " " << (*it)->getUsername() << " " << (*it)->getNickname() << std::endl;
 				std::memset(buff, 0, 1024);
 
 			}
@@ -155,12 +160,12 @@ void Server::launch()
 					std::string buffer;
 					for (; it != usr.end(); ++it)
 					{
-						if (_socket[i] != (*it)->getUserFd())
+						if (_socket[i] != (*it)->getFd())
 						{
 							std::string test = &buff[8];
 							std::string mess = test.substr(0, test.size() - 2);
-							std::string message = ":" + (*it)->getUserNickname() + " PRIVMSG " + mess + "\r\n";
-							send((*it)->getUserFd(), message.c_str(), message.size(), 0);
+							std::string message = ":" + (*it)->getNickname() + " PRIVMSG " + mess + "\r\n";
+							send((*it)->getFd(), message.c_str(), message.size(), 0);
 						}
 					}
 					
@@ -183,7 +188,7 @@ void Server::checkPass(char *buff, int i)
 		if (_users.end() != _users.begin())
 		{
 			it--;
-			id = (*it)->getIdUser();
+			id = (*it)->getId();
 		}
 		else
 			id = 0;
@@ -218,7 +223,7 @@ void Server::joinChannel(char *buff, int i)
 		_channels.push_back(c);
 		it--;
 	}
-	std::string message = ":" + (*usrIt)->getUserNickname() + " JOIN " + (*it)->getName() + "\r\n"; 
+	std::string message = ":" + (*usrIt)->getNickname() + " JOIN " + (*it)->getName() + "\r\n"; 
 	send(_socket[i], message.c_str(), message.size(), 0);
 }
 
@@ -299,6 +304,27 @@ Channel * Server::getChannel(std::string name)
 	return (NULL);
 }
 
+bool	Server::isUserCorrectlyConnected(int i)
+{
+	std::list<User *>::iterator usrIt = StaticFunctions::findByFd(_users, _socket[i]);
+	if (usrIt == _users.end())
+	{
+		StaticFunctions::SendToFd(_socket[i], "You are not authenticated", "", 0);
+		return	false;
+	}
+	if ((*usrIt)->getUsername().size() == 0)
+	{
+		StaticFunctions::SendToFd(_socket[i], "You didn't set your username", "", 0);
+		return	false;
+	}
+	if ((*usrIt)->getNickname().size() == 0)
+	{
+		StaticFunctions::SendToFd(_socket[i], "You didn't set your nickname", "", 0);
+		return	false;
+	}
+	return	true;
+}
+
 struct sockaddr_in Server::getAdresse()
 {
 	return (_address);
@@ -332,4 +358,3 @@ Server::~Server()
 {
 	return ;
 }
-

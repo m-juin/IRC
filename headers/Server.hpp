@@ -6,6 +6,8 @@
 #include <cstring>
 #include <vector>
 #include "Parser.hpp"
+
+
 #ifndef SERVER_HPP
 # define SERVER_HPP
 
@@ -29,6 +31,8 @@ class Server {
 		void launch();
 		void closeAllSocket();
 		fd_set addNewSocket();
+
+		bool isUserCorrectlyConnected(int i);
 
 		void joinChannel(char *buff, int i);
 		void checkPass(char *buff, int i);

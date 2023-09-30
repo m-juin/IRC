@@ -16,18 +16,17 @@ class User {
         User & operator=(User const & user);
         ~User();
 		bool operator==(User const & user);
-		
-
 		User(std::size_t id, std::string username, std::string nickname, int fd);
-		std::size_t	getIdUser() const;
-		std::string getUsernameUser() const;
-		std::string getUserNickname() const;
-		int			getUserFd() const;
+
+		std::size_t	getId()			const;
+		std::string getUsername()	const;
+		std::string getNickname()	const;
+		int			getFd() 		const;
 		
-		void	setIdUser(std::size_t value);
-		void	setUsernameUser(std::string value);
-		void 	setUserNickname(std::string value);
-		void	setUserFd(int value);
+		void	setId(std::size_t value);
+		void	setUsername(std::string value);
+		void 	setNickname(std::string value);
+		void	setFd(int value);
 
 		bool	addFlag(std::size_t channelID, char flag);
 		bool	rmFlag(std::size_t channelID, char flag);
@@ -37,12 +36,13 @@ class User {
 		std::string  getFlags(std::size_t channelId);
 
     private:
-		flagsPair::iterator	getFlagsIndex(std::size_t channelId);
-		flagsPair 										_channelsFlags;
-        std::size_t 									_id;
-		std::string 									_username;
-		std::string										_nickname;
-		int												_fd;
+		flagsPair::iterator		getFlagsIndex(std::size_t channelId);
+
+		flagsPair 				_channelsFlags;
+        std::size_t 			_id;
+		std::string 			_username;
+		std::string				_nickname;
+		int						_fd;
 };
 
 bool operator==(User const * src, std::string const & name);

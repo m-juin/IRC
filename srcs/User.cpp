@@ -41,42 +41,42 @@ User::~User()
 /*																								*/
 /*----------------------------------------------------------------------------------------------*/
 
-std::size_t  User::getIdUser() const
+std::size_t  User::getId() const
 {
 	return (_id);
 }
 
-std::string User::getUsernameUser() const
+std::string User::getUsername() const
 {
 	return (_username);
 }
 
-std::string	User::getUserNickname() const
+std::string	User::getNickname() const
 {
 	return (_nickname);
 }
 
-int	User::getUserFd() const
+int	User::getFd() const
 {
 	return (_fd);
 }
 
-void	User::setIdUser(std::size_t value)
+void	User::setId(std::size_t value)
 {
 	_id = value;
 }
 
-void	User::setUsernameUser(std::string value)
+void	User::setUsername(std::string value)
 {
 	_username = value;
 }
 
-void 	User::setUserNickname(std::string value)
+void 	User::setNickname(std::string value)
 {
 	_nickname = value;
 }
 
-void	User::setUserFd(int value)
+void	User::setFd(int value)
 {
 	_fd = value;
 }
@@ -176,7 +176,7 @@ bool User::operator==(User const &src)
 
 bool operator==(User const * src, std::string const &name)
 {
-	return src->getUsernameUser() == name;
+	return src->getUsername() == name;
 }
 
 User & User::operator=(User const & user)

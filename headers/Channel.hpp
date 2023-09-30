@@ -3,9 +3,8 @@
 #include <algorithm>
 #include <unistd.h>
 
-
-#ifndef Channel_HPP
-# define Channel_HPP
+#ifndef CHANNEL_HPP
+# define CHANNEL_HPP
 
 class User;
 
@@ -18,23 +17,23 @@ class Channel {
 		~Channel();
 		bool operator==(Channel const & src);
 
-		std::string 	getName()	const;		
-		std::string 	getPassword()	const;		
-		std::string 	getTopic()	const;
-		std::size_t 	getId() 	const;
-		std::list<User *> getUsers() const;
+		std::string 		getName()		const;		
+		std::string 		getPassword()	const;		
+		std::string 		getTopic()		const;
+		std::size_t 		getId() 		const;
+		std::list<User *>	getUsers()		const;
 
 		void	setName(std::string &name);		
 		void	setPassword(std::string &password);		
 		void	setTopic(std::string &topic);		
 
-		void	addChannelFlag(char flag, User *op);
+		void	addFlag(char flag, User *op);
 		void	addUser(User *user);
 		void	addOperator(User *op, std::string &name);
 		
 		void	kickUser(User *op, std::string &name);
 		void	rmOperator(User *op, std::string &name);
-		void	rmChannelFlag(char flag, User *op);
+		void	rmFlag(char flag, User *op);
 		
 		void	changeTopic(User *usr, std::string newTopic);
 		void	changeUserLimit(User *usr, std::size_t limit);

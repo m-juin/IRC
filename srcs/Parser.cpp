@@ -51,7 +51,7 @@ Parser::Parser(std::list<User *> usrs, int fd, std::string fullCmd)
 	{
 		args.push_back(*it);
 	}
-	std::cout << "User = " << op->getUserNickname() << ".\nCommand = " << cmd << ".\nArgs = ";
+	std::cout << "User = " << op->getNickname() << ".\nCommand = " << cmd << ".\nArgs = ";
 	it = args.begin();
 	ite = args.end();
 	while (it != ite)

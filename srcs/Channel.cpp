@@ -97,7 +97,7 @@ bool	Channel::isUserOp(User *op)
 	return	true;
 }
 
-void	Channel::rmChannelFlag(char flag, User *op)
+void	Channel::rmFlag(char flag, User *op)
 {
 	if (isUserOp(op) == false)
 		return	;
@@ -108,7 +108,7 @@ void	Channel::rmChannelFlag(char flag, User *op)
 		std::cerr << "Permissions not set to this channel" << std::endl;
 }
 
-void	Channel::addChannelFlag(char flag, User *op)
+void	Channel::addFlag(char flag, User *op)
 {
 	if (isUserOp(op) == false)
 		return	;
