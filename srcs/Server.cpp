@@ -87,13 +87,13 @@ void Server::launch()
 				std::list<User *>::iterator it = StaticFunctions::findByFd(_users, _socket[i]);
 				std::cout << (*it)->getId() << std::endl;
 				std::string test = &buff[5];
+				std::string nick = test.substr(0, test.size() - 2);
 				//Check if nickname is empty
-				if (test.size() == 0)
+				if (nick.size() == 0)
 				{
 					StaticFunctions::SendToFd(_socket[i], "Your nickname can't be empty", "", 0);
 					continue;
 				}
-				std::string nick = test.substr(0, test.size() - 2);
 				(*it)->setNickname(nick);
 				std::memset(buff, 0, 1024);
 			}
