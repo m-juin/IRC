@@ -28,11 +28,12 @@ class Server {
 		struct sockaddr_in	getAdresse();
 		int					getServerFd();
 
-		void launch();
-		void closeAllSocket();
-		fd_set addNewSocket();
+		void	launch();
+		void	closeAllSocket();
+		fd_set	addNewSocket();
 
 		bool isUserCorrectlyConnected(int i);
+		bool isUserAuthenticated(int i);
 
 		void joinChannel(char *buff, int i);
 		void checkPass(char *buff, int i);

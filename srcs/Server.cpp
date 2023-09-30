@@ -81,23 +81,10 @@ void Server::launch()
 			else if (valread != 0 && strncmp(buff, "NICK", 4) == 0)
 			{
 				// check si le user a tape le mot de passe
-				std::list<User *>::iterator it = _users.begin();
-				if (_users.begin() == _users.end())
-				{
-					StaticFunctions::SendToFd(_socket[i], "You are not authenticated", "", 0);
-					continue;
-				}
+				if (isUserAuthenticated(i) == false)
+					continue	;
+				std::list<User *>::iterator it = StaticFunctions::findByFd(_users, _socket[i]);
 				std::cout << (*it)->getId() << std::endl;
-				for (; it != _users.end(); it++)
-				{
-					if (_socket[i] == (*it)->getFd())
-						break ;
-				}
-				if (it == _users.end())
-				{
-					std::cout << "error" << std::endl;
-					break ;
-				}
 				std::string test = &buff[5];
 				std::string nick = test.substr(0, test.size() - 2);
 				(*it)->setNickname(nick);
@@ -107,17 +94,9 @@ void Server::launch()
 			{
 				// check si le user a tape le mot de passe
 				// on ne peut pas changer son user name
-				std::list<User *>::iterator it = _users.begin();
-				for (; it != _users.end(); it++)
-				{
-					if (_socket[i] == (*it)->getFd())
-						break ;
-				}
-				if (it == _users.end())
-				{
-					std::cout << "error" << std::endl;
-					break ;
-				}
+				if (isUserAuthenticated(i) == false)
+					continue	;
+				std::list<User *>::iterator it = StaticFunctions::findByFd(_users, _socket[i]);
 				std::string test = &buff[5];
 				std::string username = test.substr(0, test.size() - 2);
 				(*it)->setUsername(username);
@@ -179,7 +158,12 @@ void Server::launch()
 
 void Server::checkPass(char *buff, int i)
 {
-	// faire un check si il a deja rentre le mot de passe
+	// check si le user a deja tape le mot de passe
+	if (isUserAuthenticated(i) == true)
+	{
+		StaticFunctions::SendToFd(_socket[i], "You're already authenticated", "", 0);
+		return	;
+	}
 	if (strncmp(&buff[5], _password.c_str(), _password.size()) == 0)
 	{
 		StaticFunctions::SendToFd(_socket[i], "Password OK\r\n", "Now authenticate you with /NICK /USER", 0);
@@ -204,8 +188,6 @@ void Server::joinChannel(char *buff, int i)
 	std::string test = &buff[5];
 	std::string nameChannel = test.substr(0, test.size() - 2);
 	std::list<User *>::iterator usrIt = StaticFunctions::findByFd(_users, _socket[i]);
-	if (usrIt == _users.end())
-		std::cerr << "Error users not found to add to a channel, shouldn't come here" << std::endl;
 	std::list<Channel *>::iterator it = _channels.begin();
 	for (; it != _channels.end(); ++it)
 	{
@@ -223,7 +205,7 @@ void Server::joinChannel(char *buff, int i)
 		_channels.push_back(c);
 		it--;
 	}
-	std::string message = ":" + (*usrIt)->getNickname() + " JOIN " + (*it)->getName() + "\r\n"; 
+	std::string message = ":" + (*usrIt)->getNickname() + " JOIN " + (*it)->getName() + "\r\n";
 	send(_socket[i], message.c_str(), message.size(), 0);
 }
 
@@ -320,6 +302,17 @@ bool	Server::isUserCorrectlyConnected(int i)
 	if ((*usrIt)->getNickname().size() == 0)
 	{
 		StaticFunctions::SendToFd(_socket[i], "You didn't set your nickname", "", 0);
+		return	false;
+	}
+	return	true;
+}
+
+bool	Server::isUserAuthenticated(int i)
+{
+	std::list<User *>::iterator usrIt = StaticFunctions::findByFd(_users, _socket[i]);
+	if (usrIt == _users.end())
+	{
+		StaticFunctions::SendToFd(_socket[i], "You are not authenticated", "", 0);
 		return	false;
 	}
 	return	true;
