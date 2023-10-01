@@ -81,7 +81,7 @@ void Server::launch()
 			}
 			else if (valread != 0 && Parsedcmd->getCmd() == PASS)
 			{
-				checkPass(buff, i);
+				checkPass(Parsedcmd, i);
 			}	
 			else if (valread != 0 && Parsedcmd->getCmd() == NICK)
 			{
@@ -90,7 +90,6 @@ void Server::launch()
 			else if (valread != 0 && Parsedcmd->getCmd() == USER)
 			{
 				setUsername(i, Parsedcmd);
-
 			}
 			else if (valread != 0 && strcmp(buff, "END\r\n") == 0)
 			{
@@ -143,7 +142,7 @@ void Server::launch()
 	}
 }
 
-void Server::checkPass(char *buff, int i)
+void Server::checkPass(Parser *cmd, int i)
 {
 	// check si le user a deja tape le mot de passe
 	if (isUserAuthenticated(i) == true)
@@ -151,7 +150,7 @@ void Server::checkPass(char *buff, int i)
 		StaticFunctions::SendToFd(_socket[i], "You're already authenticated", "", 0);
 		return	;
 	}
-	if (strncmp(&buff[5], _password.c_str(), _password.size()) == 0)
+	if (cmd->getArgs()[0] == _password)
 	{
 		StaticFunctions::SendToFd(_socket[i], "Password OK\r\n", "Now authenticate you with /NICK /USER", 0);
 		std::list<User *>::iterator it = _users.end();
