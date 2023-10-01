@@ -41,7 +41,7 @@ class Server {
 		void setNickname(int i, Parser *cmd);
 		void setUsername(int i, Parser *cmd);
 
-		void pvtMessage(int i, Parser *cmd);
+		void messageChannel(int i, Parser *cmd);
 
 	private:
         std::list<Channel*>		_channels;

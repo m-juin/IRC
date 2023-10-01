@@ -90,9 +90,9 @@ void Server::launch()
 				close(_serverFd);
 				return ;
 			}
-			else if (valread != 0 && Parsedcmd->getCmd() == PRIVMSG)
+			else if (valread != 0 && Parsedcmd->getArgs().size() != 0)
 			{
-				pvtMessage(i, Parsedcmd);
+				messageChannel(i, Parsedcmd);
 			}
 			std::memset(buff, 0, 1024);
 		}
@@ -101,7 +101,6 @@ void Server::launch()
 
 void Server::checkPass(Parser *cmd, int i)
 {
-	// check si le user a deja tape le mot de passe
 	if (isUserAuthenticated(i) == true)
 	{
 		StaticFunctions::SendToFd(_socket[i], "You're already authenticated", "", 0);
@@ -300,14 +299,13 @@ void	Server::setUsername(int i, Parser *cmd)
 	std::cout << "New client: " << (*it)->getFd() << " " << (*it)->getUsername() << " " << (*it)->getNickname() << std::endl;
 }
 
-void	Server::pvtMessage(int i, Parser *cmd)
+void	Server::messageChannel(int i, Parser *cmd)
 {
 	Channel * myChan = getChannel(cmd->getArgs()[0]);
 	if (myChan == NULL)
 		return ;
 	std::list<User *> usr = myChan->getUsers();
 	std::list<User *>::iterator it = usr.begin();
-	std::string buffer;
 	for (; it != usr.end(); ++it)
 	{
 		if (_socket[i] != (*it)->getFd())
@@ -316,7 +314,6 @@ void	Server::pvtMessage(int i, Parser *cmd)
 			send((*it)->getFd(), message.c_str(), message.size(), 0);
 		}
 	}
-
 }
 
 struct sockaddr_in Server::getAdresse()
