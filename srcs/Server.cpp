@@ -355,6 +355,11 @@ void	Server::setUsername(int i, Parser *cmd)
 	}
 	std::vector<std::string>::iterator osef = cmd->args.begin();
 	osef++;
+	if (!(*it)->getUsername().empty())
+	{
+		StaticFunctions::SendToFd(_socket[i], "You can't change your username", "", 0);
+		return;
+	}
 	//Check if username is empty
 	if ((*osef).size() == 0)
 	{
