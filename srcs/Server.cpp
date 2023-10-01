@@ -324,6 +324,13 @@ void	Server::setNickname(int i, Parser *cmd)
 		StaticFunctions::SendToFd(_socket[i], "Your nickname can't be empty", "", 0);
 		return;
 	}
+	if ((*it)->getNickname().empty())
+	{
+		(*it)->setNickname(*osef);
+		StaticFunctions::SendToFd(_socket[i], "NICK ", (*it)->getNickname(), 0);
+		return ;
+	}
+	StaticFunctions::SendToFd(_socket[i], (*it)->getNickname() + " nick change by ", *osef, 0);
 	(*it)->setNickname(*osef);
 }
 
