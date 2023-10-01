@@ -35,11 +35,13 @@ class Server {
 		bool isUserCorrectlyConnected(int i);
 		bool isUserAuthenticated(int i);
 
-		void joinChannel(char *buff, int i);
-		void checkPass(char *buff, int i);
+		void joinChannel(Parser *cmd, int i);
+		void checkPass(Parser *cmd, int i);
 
 		void setNickname(int i, Parser *cmd);
 		void setUsername(int i, Parser *cmd);
+
+		void messageChannel(int i, Parser *cmd);
 
 	private:
         std::list<Channel*>		_channels;

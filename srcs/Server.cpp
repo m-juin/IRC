@@ -61,26 +61,20 @@ void Server::launch()
 			if (_socket[i] > 0 && FD_ISSET(_socket[i], &rfds))
 			{
 				valread = recv(_socket[i], buff, 1024, 0);
-				//std::memset(buff, 0, 1024);
-				// A delete test Parser:
 				Parsedcmd = new Parser(_users, _socket[i], buff);
-				std::vector<std::pair<std::string, std::string> >::iterator osef = Parsedcmd->getJoinArgs().begin();
-				for (; osef != Parsedcmd->getJoinArgs().end(); osef++)
-					std::cout << "First = " << osef->first << "\nSecond =" << osef->second << std::endl;
 			}
 			if (valread != 0 && Parsedcmd->getCmd() == JOIN)
 			{
-				//Check if pass is entered, username and nickname are set
 				if (isUserCorrectlyConnected(i) == false)
 				{
 					StaticFunctions::SendToFd(_socket[i], "You don't have permission to execute commands", "", 0);
 					continue;
 				}
-				joinChannel(buff, i);
+				joinChannel(Parsedcmd, i);
 			}
 			else if (valread != 0 && Parsedcmd->getCmd() == PASS)
 			{
-				checkPass(buff, i);
+				checkPass(Parsedcmd, i);
 			}	
 			else if (valread != 0 && Parsedcmd->getCmd() == NICK)
 			{
@@ -89,7 +83,6 @@ void Server::launch()
 			else if (valread != 0 && Parsedcmd->getCmd() == USER)
 			{
 				setUsername(i, Parsedcmd);
-
 			}
 			else if (valread != 0 && strcmp(buff, "END\r\n") == 0)
 			{
@@ -97,60 +90,23 @@ void Server::launch()
 				close(_serverFd);
 				return ;
 			}
-			else if (valread != 0)
+			else if (valread != 0 && Parsedcmd->getArgs().size() != 0)
 			{
-				if (buff[8] == '#')
-				{
-					int k = 0;
-					while (buff[k] != '#')
-						k++;
-					std::string value = &buff[k];
-					k = 0;
-					int j = 0;
-					while (value[k] != ' ')
-					{
-						k++;
-						if (value[k] == ' ')
-						{
-							while (value[k + j])
-								j++;
-							break ;	
-						}
-					}
-					value = value.substr(0, value.size() - j);
-					Channel * myChan = getChannel(value);
-					if (myChan == NULL)
-						return ;
-					std::list<User *> usr = myChan->getUsers();
-					std::list<User *>::iterator it = usr.begin();
-					std::string buffer;
-					for (; it != usr.end(); ++it)
-					{
-						if (_socket[i] != (*it)->getFd())
-						{
-							std::string test = &buff[8];
-							std::string mess = test.substr(0, test.size() - 2);
-							std::string message = ":" + (*it)->getNickname() + " PRIVMSG " + mess + "\r\n";
-							send((*it)->getFd(), message.c_str(), message.size(), 0);
-						}
-					}
-					
-				}
+				messageChannel(i, Parsedcmd);
 			}
 			std::memset(buff, 0, 1024);
 		}
 	}
 }
 
-void Server::checkPass(char *buff, int i)
+void Server::checkPass(Parser *cmd, int i)
 {
-	// check si le user a deja tape le mot de passe
 	if (isUserAuthenticated(i) == true)
 	{
 		StaticFunctions::SendToFd(_socket[i], "You're already authenticated", "", 0);
 		return	;
 	}
-	if (strncmp(&buff[5], _password.c_str(), _password.size()) == 0)
+	if (cmd->getArgs()[0] == _password)
 	{
 		StaticFunctions::SendToFd(_socket[i], "Password OK\r\n", "Now authenticate you with /NICK /USER", 0);
 		std::list<User *>::iterator it = _users.end();
@@ -169,21 +125,19 @@ void Server::checkPass(char *buff, int i)
 }
 
 
-void Server::joinChannel(char *buff, int i)
+void Server::joinChannel(Parser *cmd, int i)
 {
-	std::string test = &buff[5];
-	std::string nameChannel = test.substr(0, test.size() - 2);
 	std::list<User *>::iterator usrIt = StaticFunctions::findByFd(_users, _socket[i]);
-	std::list<Channel *>::iterator it = find(_channels.begin(), _channels.end(), nameChannel);
+	std::list<Channel *>::iterator it = find(_channels.begin(), _channels.end(), cmd->getJoinArgs()[0].first);
 	if (it != _channels.end())
 	{
-		StaticFunctions::SendToFd(_socket[i], "You joined channel ", nameChannel, 0);
+		StaticFunctions::SendToFd(_socket[i], "You joined channel ", cmd->getJoinArgs()[0].first, 0);
 		(*it)->addUser(*usrIt);
 		return ;
 	}
 	else if (it == _channels.end())
 	{
-		Channel *c = new Channel(_channelNumber,  nameChannel, *usrIt);
+		Channel *c = new Channel(_channelNumber,  cmd->getJoinArgs()[0].first, *usrIt);
 		_channelNumber++;
 		_channels.push_back(c);
 		it--;
@@ -303,63 +257,63 @@ bool	Server::isUserAuthenticated(int i)
 
 void	Server::setNickname(int i, Parser *cmd)
 {
-	// check si le user a tape le mot de passe
 	if (isUserAuthenticated(i) == false)
 		return	;
 	std::list<User *>::iterator it = StaticFunctions::findByFd(_users, _socket[i]);
-	//std::cout << (*it)->getId() << std::endl;
-	std::vector<std::string>::iterator osef = cmd->getArgs().begin();
-	osef++;
-	//Check if nickname is empty
-	if ((*osef).size() == 0)
+	if (cmd->getArgs()[0].size() == 0)
 	{
 		StaticFunctions::SendToFd(_socket[i], "Your nickname can't be empty", "", 0);
 		return;
 	}
 	if ((*it)->getNickname().empty())
 	{
-		(*it)->setNickname(*osef);
+		(*it)->setNickname(cmd->getArgs()[0]);
 		StaticFunctions::SendToFd(_socket[i], "NICK ", (*it)->getNickname(), 0);
 		return ;
 	}
-	StaticFunctions::SendToFd(_socket[i], (*it)->getNickname() + " nick change by ", *osef, 0);
-	(*it)->setNickname(*osef);
+	StaticFunctions::SendToFd(_socket[i], (*it)->getNickname() + " nick change by ", cmd->getArgs()[0], 0);
+	(*it)->setNickname(cmd->getArgs()[0]);
 }
 
 void	Server::setUsername(int i, Parser *cmd)
 {
-	// check si le user a tape le mot de passe
-	// on ne peut pas changer son user name
 	if (isUserAuthenticated(i) == false)
 		return;
 	std::list<User *>::iterator it = StaticFunctions::findByFd(_users, _socket[i]);
-	//Check if username is already set, shouldn't do anything is this case
 	if ((*it)->getUsername().size() != 0)
 	{
 		StaticFunctions::SendToFd(_socket[i], "Your username is already set", "", 0);
 		return;
 	}
-	//Check if nickname is set or not
 	if ((*it)->getNickname().size() == 0)
 	{
 		StaticFunctions::SendToFd(_socket[i], "Your nickname is not set", "", 0);
 		return;
 	}
-	std::vector<std::string>::iterator osef = cmd->getArgs().begin();
-	osef++;
-	if (!(*it)->getUsername().empty())
-	{
-		StaticFunctions::SendToFd(_socket[i], "You can't change your username", "", 0);
-		return;
-	}
-	//Check if username is empty
-	if ((*osef).size() == 0)
+	if ((cmd->getArgs()[0]).size() == 0)
 	{
 		StaticFunctions::SendToFd(_socket[i], "Your username can't be empty", "", 0);
 		return;
 	}
-	(*it)->setUsername(*osef);
+	(*it)->setUsername(cmd->getArgs()[0]);
 	std::cout << "New client: " << (*it)->getFd() << " " << (*it)->getUsername() << " " << (*it)->getNickname() << std::endl;
+}
+
+void	Server::messageChannel(int i, Parser *cmd)
+{
+	Channel * myChan = getChannel(cmd->getArgs()[0]);
+	if (myChan == NULL)
+		return ;
+	std::list<User *> usr = myChan->getUsers();
+	std::list<User *>::iterator it = usr.begin();
+	for (; it != usr.end(); ++it)
+	{
+		if (_socket[i] != (*it)->getFd())
+		{
+			std::string message = ":" + (*it)->getNickname() + " PRIVMSG " + cmd->getArgs()[1] + "\r\n";
+			send((*it)->getFd(), message.c_str(), message.size(), 0);
+		}
+	}
 }
 
 struct sockaddr_in Server::getAdresse()
