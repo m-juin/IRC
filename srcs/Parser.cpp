@@ -5,8 +5,7 @@ Command getCmdEnum(std::string arg)
 {
 	std::string validCmd[] = {"PASS", "USER", "NICK", "JOIN", "MODE", "WHO"};
 	size_t size = sizeof(validCmd) / sizeof(std::string);
-	size_t i = 0;
-	for (; i < size; i++)
+	for (size_t i = 0; i < size; i++)
 	{
 		if (validCmd[i] == arg)
 			return (Command)i;
@@ -18,7 +17,6 @@ Command getCmdEnum(std::string arg)
 Parser::Parser(std::list<User *> usrs, int fd, std::string fullCmd)
 {
 	fullCmd = fullCmd.substr(0, fullCmd.size() - 2);
-	std::cout << fullCmd << std::endl;
 	if (fullCmd.size() < 3)
 	{
 		std::cerr << "Unknown command: \"" << fullCmd << "\"\n";
@@ -46,10 +44,7 @@ Parser::Parser(std::list<User *> usrs, int fd, std::string fullCmd)
 		std::size_t pos = 0;
 		while (pos < tmp.size())
 		{
-			if (pos < tmp2.size())
-				_joinArgs.push_back(std::pair<std::string, std::string>(tmp[pos], tmp2[pos]));
-			else
-				_joinArgs.push_back(std::pair<std::string, std::string>(tmp[pos], ""));
+			_joinArgs.push_back(std::pair<std::string, std::string>(tmp[pos], (pos < tmp2.size() ? tmp2[pos] : "")));
 			pos++;
 		}
 	}
@@ -58,9 +53,7 @@ Parser::Parser(std::list<User *> usrs, int fd, std::string fullCmd)
 		std::vector<std::string>::iterator it = vstrings.begin();
 		std::vector<std::string>::iterator ite = vstrings.end();
 		while (++it != ite)
-		{
 			_args.push_back(*it);
-		}
 	}
 	std::list<User *>::iterator usrIt = StaticFunctions::findByFd(usrs, fd);
 	if (usrIt == usrs.end())
