@@ -57,13 +57,18 @@ void Server::launch()
 		for (int i = 1; i < 1024; i++)
 		{
 			int valread = 0;
+			Parser *Parsedcmd;
 			if (_socket[i] > 0 && FD_ISSET(_socket[i], &rfds))
 			{
 				valread = recv(_socket[i], buff, 1024, 0);
+				//std::memset(buff, 0, 1024);
 				// A delete test Parser:
-				Parser Parsedcmd(_users, _socket[i], buff);
+				Parsedcmd = new Parser(_users, _socket[i], buff);
+				std::vector<std::string>::iterator osef = Parsedcmd->args.begin();
+				for (; osef != Parsedcmd->args.end(); osef++)
+					std::cout << *osef << std::endl;
 			}
-			if (valread != 0 && strncmp(buff, "JOIN", 4) == 0)
+			if (valread != 0 && Parsedcmd->cmd == 3)
 			{
 				//Check if pass is entered, username and nickname are set
 				if (isUserCorrectlyConnected(i) == false)
@@ -74,58 +79,19 @@ void Server::launch()
 				joinChannel(buff, i);
 				std::memset(buff, 0, 1024);
 			}
-			else if (valread != 0 && strncmp(buff, "PASS", 4) == 0)
+			else if (valread != 0 && Parsedcmd->cmd == 0)
 			{
 				checkPass(buff, i);
 				std::memset(buff, 0, 1024);
 			}
-			else if (valread != 0 && strncmp(buff, "NICK", 4) == 0)
+			else if (valread != 0 && Parsedcmd->cmd == 2)
 			{
-				// check si le user a tape le mot de passe
-				if (isUserAuthenticated(i) == false)
-					continue	;
-				std::list<User *>::iterator it = StaticFunctions::findByFd(_users, _socket[i]);
-				std::cout << (*it)->getId() << std::endl;
-				std::string test = &buff[5];
-				std::string nick = test.substr(0, test.size() - 2);
-				//Check if nickname is empty
-				if (nick.size() == 0)
-				{
-					StaticFunctions::SendToFd(_socket[i], "Your nickname can't be empty", "", 0);
-					continue;
-				}
-				(*it)->setNickname(nick);
+				setNickname(i, Parsedcmd);
 				std::memset(buff, 0, 1024);
 			}
-			else if (valread != 0 && strncmp(buff, "USER", 4) == 0)
+			else if (valread != 0 && Parsedcmd->cmd == 1)
 			{
-				// check si le user a tape le mot de passe
-				// on ne peut pas changer son user name
-				if (isUserAuthenticated(i) == false)
-					continue;
-				std::list<User *>::iterator it = StaticFunctions::findByFd(_users, _socket[i]);
-				//Check if username is already set, shouldn't do anything is this case
-				if ((*it)->getUsername().size() != 0)
-				{
-					StaticFunctions::SendToFd(_socket[i], "Your username is already set", "", 0);
-					continue;
-				}
-				//Check if nickname is set or not
-				if ((*it)->getNickname().size() == 0)
-				{
-					StaticFunctions::SendToFd(_socket[i], "Your nickname is not set", "", 0);
-					continue;
-				}
-				std::string test = &buff[5];
-				std::string username = test.substr(0, test.size() - 2);
-				//Check if username is empty
-				if (username.size() == 0)
-				{
-					StaticFunctions::SendToFd(_socket[i], "Your username can't be empty", "", 0);
-					continue;
-				}
-				(*it)->setUsername(username);
-				std::cout << "New client: " << (*it)->getFd() << " " << (*it)->getUsername() << " " << (*it)->getNickname() << std::endl;
+				setUsername(i, Parsedcmd);
 				std::memset(buff, 0, 1024);
 
 			}
@@ -174,7 +140,7 @@ void Server::launch()
 					}
 					
 				}
-            	std::memset(buff, 0, 1024);
+				std::memset(buff, 0, 1024);
 			}
 			std::memset(buff, 0, 1024);
 		}
@@ -341,6 +307,55 @@ bool	Server::isUserAuthenticated(int i)
 		return	false;
 	}
 	return	true;
+}
+
+void	Server::setNickname(int i, Parser *cmd)
+{
+	// check si le user a tape le mot de passe
+	if (isUserAuthenticated(i) == false)
+		return	;
+	std::list<User *>::iterator it = StaticFunctions::findByFd(_users, _socket[i]);
+	//std::cout << (*it)->getId() << std::endl;
+	std::vector<std::string>::iterator osef = cmd->args.begin();
+	osef++;
+	//Check if nickname is empty
+	if ((*osef).size() == 0)
+	{
+		StaticFunctions::SendToFd(_socket[i], "Your nickname can't be empty", "", 0);
+		return;
+	}
+	(*it)->setNickname(*osef);
+}
+
+void	Server::setUsername(int i, Parser *cmd)
+{
+	// check si le user a tape le mot de passe
+	// on ne peut pas changer son user name
+	if (isUserAuthenticated(i) == false)
+		return;
+	std::list<User *>::iterator it = StaticFunctions::findByFd(_users, _socket[i]);
+	//Check if username is already set, shouldn't do anything is this case
+	if ((*it)->getUsername().size() != 0)
+	{
+		StaticFunctions::SendToFd(_socket[i], "Your username is already set", "", 0);
+		return;
+	}
+	//Check if nickname is set or not
+	if ((*it)->getNickname().size() == 0)
+	{
+		StaticFunctions::SendToFd(_socket[i], "Your nickname is not set", "", 0);
+		return;
+	}
+	std::vector<std::string>::iterator osef = cmd->args.begin();
+	osef++;
+	//Check if username is empty
+	if ((*osef).size() == 0)
+	{
+		StaticFunctions::SendToFd(_socket[i], "Your username can't be empty", "", 0);
+		return;
+	}
+	(*it)->setUsername(*osef);
+	std::cout << "New client: " << (*it)->getFd() << " " << (*it)->getUsername() << " " << (*it)->getNickname() << std::endl;
 }
 
 struct sockaddr_in Server::getAdresse()

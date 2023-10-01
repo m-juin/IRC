@@ -38,6 +38,9 @@ class Server {
 		void joinChannel(char *buff, int i);
 		void checkPass(char *buff, int i);
 
+		void setNickname(int i, Parser *cmd);
+		void setUsername(int i, Parser *cmd);
+
 	private:
         std::list<Channel*>		_channels;
 		std::list<User *>		_users;
