@@ -308,22 +308,20 @@ void	Server::setNickname(int i, Parser *cmd)
 		return	;
 	std::list<User *>::iterator it = StaticFunctions::findByFd(_users, _socket[i]);
 	//std::cout << (*it)->getId() << std::endl;
-	std::vector<std::string>::iterator osef = cmd->getArgs().begin();
-	osef++;
 	//Check if nickname is empty
-	if ((*osef).size() == 0)
+	if (cmd->getArgs()[0].size() == 0)
 	{
 		StaticFunctions::SendToFd(_socket[i], "Your nickname can't be empty", "", 0);
 		return;
 	}
 	if ((*it)->getNickname().empty())
 	{
-		(*it)->setNickname(*osef);
+		(*it)->setNickname(cmd->getArgs()[0]);
 		StaticFunctions::SendToFd(_socket[i], "NICK ", (*it)->getNickname(), 0);
 		return ;
 	}
-	StaticFunctions::SendToFd(_socket[i], (*it)->getNickname() + " nick change by ", *osef, 0);
-	(*it)->setNickname(*osef);
+	StaticFunctions::SendToFd(_socket[i], (*it)->getNickname() + " nick change by ", cmd->getArgs()[0], 0);
+	(*it)->setNickname(cmd->getArgs()[0]);
 }
 
 void	Server::setUsername(int i, Parser *cmd)
@@ -345,20 +343,18 @@ void	Server::setUsername(int i, Parser *cmd)
 		StaticFunctions::SendToFd(_socket[i], "Your nickname is not set", "", 0);
 		return;
 	}
-	std::vector<std::string>::iterator osef = cmd->getArgs().begin();
-	osef++;
 	if (!(*it)->getUsername().empty())
 	{
 		StaticFunctions::SendToFd(_socket[i], "You can't change your username", "", 0);
 		return;
 	}
 	//Check if username is empty
-	if ((*osef).size() == 0)
+	if ((cmd->getArgs()[0]).size() == 0)
 	{
 		StaticFunctions::SendToFd(_socket[i], "Your username can't be empty", "", 0);
 		return;
 	}
-	(*it)->setUsername(*osef);
+	(*it)->setUsername(cmd->getArgs()[0]);
 	std::cout << "New client: " << (*it)->getFd() << " " << (*it)->getUsername() << " " << (*it)->getNickname() << std::endl;
 }
 
