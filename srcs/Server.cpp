@@ -64,11 +64,11 @@ void Server::launch()
 				//std::memset(buff, 0, 1024);
 				// A delete test Parser:
 				Parsedcmd = new Parser(_users, _socket[i], buff);
-				std::vector<std::string>::iterator osef = Parsedcmd->args.begin();
-				for (; osef != Parsedcmd->args.end(); osef++)
+				std::vector<std::string>::iterator osef = Parsedcmd->args2.begin();
+				for (; osef != Parsedcmd->args2.end(); osef++)
 					std::cout << *osef << std::endl;
 			}
-			if (valread != 0 && Parsedcmd->cmd == 3)
+			if (valread != 0 && Parsedcmd->cmd == JOIN)
 			{
 				//Check if pass is entered, username and nickname are set
 				if (isUserCorrectlyConnected(i) == false)
@@ -79,17 +79,17 @@ void Server::launch()
 				joinChannel(buff, i);
 				std::memset(buff, 0, 1024);
 			}
-			else if (valread != 0 && Parsedcmd->cmd == 0)
+			else if (valread != 0 && Parsedcmd->cmd == PASS)
 			{
 				checkPass(buff, i);
 				std::memset(buff, 0, 1024);
 			}
-			else if (valread != 0 && Parsedcmd->cmd == 2)
+			else if (valread != 0 && Parsedcmd->cmd == NICK)
 			{
 				setNickname(i, Parsedcmd);
 				std::memset(buff, 0, 1024);
 			}
-			else if (valread != 0 && Parsedcmd->cmd == 1)
+			else if (valread != 0 && Parsedcmd->cmd == USER)
 			{
 				setUsername(i, Parsedcmd);
 				std::memset(buff, 0, 1024);
