@@ -324,6 +324,13 @@ void	Server::setNickname(int i, Parser *cmd)
 		StaticFunctions::SendToFd(_socket[i], "Your nickname can't be empty", "", 0);
 		return;
 	}
+	if ((*it)->getNickname().empty())
+	{
+		(*it)->setNickname(*osef);
+		StaticFunctions::SendToFd(_socket[i], "NICK ", (*it)->getNickname(), 0);
+		return ;
+	}
+	StaticFunctions::SendToFd(_socket[i], (*it)->getNickname() + " nick change by ", *osef, 0);
 	(*it)->setNickname(*osef);
 }
 
@@ -348,6 +355,11 @@ void	Server::setUsername(int i, Parser *cmd)
 	}
 	std::vector<std::string>::iterator osef = cmd->args.begin();
 	osef++;
+	if (!(*it)->getUsername().empty())
+	{
+		StaticFunctions::SendToFd(_socket[i], "You can't change your username", "", 0);
+		return;
+	}
 	//Check if username is empty
 	if ((*osef).size() == 0)
 	{
