@@ -35,7 +35,7 @@ class Server {
 		bool isUserCorrectlyConnected(int i);
 		bool isUserAuthenticated(int i);
 
-		void joinChannel(char *buff, int i);
+		void joinChannel(Parser *cmd, int i);
 		void checkPass(char *buff, int i);
 
 		void setNickname(int i, Parser *cmd);

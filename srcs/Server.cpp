@@ -64,19 +64,20 @@ void Server::launch()
 				//std::memset(buff, 0, 1024);
 				// A delete test Parser:
 				Parsedcmd = new Parser(_users, _socket[i], buff);
-				std::vector<std::pair<std::string, std::string> >::iterator osef = Parsedcmd->getJoinArgs().begin();
+				/*std::vector<std::pair<std::string, std::string> >::iterator osef = Parsedcmd->getJoinArgs().begin();
 				for (; osef != Parsedcmd->getJoinArgs().end(); osef++)
-					std::cout << "First = " << osef->first << "\nSecond =" << osef->second << std::endl;
+					std::cout << "First = " << osef->first << "\nSecond =" << osef->second << std::endl;*/
 			}
 			if (valread != 0 && Parsedcmd->getCmd() == JOIN)
 			{
 				//Check if pass is entered, username and nickname are set
+				//std::cout << Parsedcmd->getJoinArgs()->first[0] << std::endl;
 				if (isUserCorrectlyConnected(i) == false)
 				{
 					StaticFunctions::SendToFd(_socket[i], "You don't have permission to execute commands", "", 0);
 					continue;
 				}
-				joinChannel(buff, i);
+				joinChannel(Parsedcmd, i);
 			}
 			else if (valread != 0 && Parsedcmd->getCmd() == PASS)
 			{
@@ -169,21 +170,19 @@ void Server::checkPass(char *buff, int i)
 }
 
 
-void Server::joinChannel(char *buff, int i)
+void Server::joinChannel(Parser *cmd, int i)
 {
-	std::string test = &buff[5];
-	std::string nameChannel = test.substr(0, test.size() - 2);
 	std::list<User *>::iterator usrIt = StaticFunctions::findByFd(_users, _socket[i]);
-	std::list<Channel *>::iterator it = find(_channels.begin(), _channels.end(), nameChannel);
+	std::list<Channel *>::iterator it = find(_channels.begin(), _channels.end(), cmd->getJoinArgs()[0].first);
 	if (it != _channels.end())
 	{
-		StaticFunctions::SendToFd(_socket[i], "You joined channel ", nameChannel, 0);
+		StaticFunctions::SendToFd(_socket[i], "You joined channel ", cmd->getJoinArgs()[0].first, 0);
 		(*it)->addUser(*usrIt);
 		return ;
 	}
 	else if (it == _channels.end())
 	{
-		Channel *c = new Channel(_channelNumber,  nameChannel, *usrIt);
+		Channel *c = new Channel(_channelNumber,  cmd->getJoinArgs()[0].first, *usrIt);
 		_channelNumber++;
 		_channels.push_back(c);
 		it--;
