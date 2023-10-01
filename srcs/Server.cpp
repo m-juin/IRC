@@ -77,22 +77,18 @@ void Server::launch()
 					continue;
 				}
 				joinChannel(buff, i);
-				std::memset(buff, 0, 1024);
 			}
 			else if (valread != 0 && Parsedcmd->getCmd() == PASS)
 			{
 				checkPass(buff, i);
-				std::memset(buff, 0, 1024);
-			}
+			}	
 			else if (valread != 0 && Parsedcmd->getCmd() == NICK)
 			{
 				setNickname(i, Parsedcmd);
-				std::memset(buff, 0, 1024);
 			}
 			else if (valread != 0 && Parsedcmd->getCmd() == USER)
 			{
 				setUsername(i, Parsedcmd);
-				std::memset(buff, 0, 1024);
 
 			}
 			else if (valread != 0 && strcmp(buff, "END\r\n") == 0)
@@ -140,7 +136,6 @@ void Server::launch()
 					}
 					
 				}
-				std::memset(buff, 0, 1024);
 			}
 			std::memset(buff, 0, 1024);
 		}
@@ -179,17 +174,14 @@ void Server::joinChannel(char *buff, int i)
 	std::string test = &buff[5];
 	std::string nameChannel = test.substr(0, test.size() - 2);
 	std::list<User *>::iterator usrIt = StaticFunctions::findByFd(_users, _socket[i]);
-	std::list<Channel *>::iterator it = _channels.begin();
-	for (; it != _channels.end(); ++it)
+	std::list<Channel *>::iterator it = find(_channels.begin(), _channels.end(), nameChannel);
+	if (it != _channels.end())
 	{
-		if (*it == nameChannel)
-		{
-			StaticFunctions::SendToFd(_socket[i], "You joined channel ", nameChannel, 0);
-			(*it)->addUser(*usrIt);
-			break;
-		}
+		StaticFunctions::SendToFd(_socket[i], "You joined channel ", nameChannel, 0);
+		(*it)->addUser(*usrIt);
+		return ;
 	}
-	if (it == _channels.end())
+	else if (it == _channels.end())
 	{
 		Channel *c = new Channel(_channelNumber,  nameChannel, *usrIt);
 		_channelNumber++;
