@@ -12,6 +12,9 @@ Server::Server(std::size_t port, std::string password)
 	_port = port;
 	_password = password;
 	_channelNumber = 0;
+	for (int i = 0; i < 1000; i++) {
+        _socket.push_back(-1);
+    }
 
 	_serverFd = socket(AF_INET, SOCK_STREAM, 0);
     if (_serverFd < 0)
@@ -45,16 +48,13 @@ void Server::launch()
 	char buff[1024];	
 
     std::memset(buff, 0, 1024);
-	for (int i = 0 ;i < 1024;i++) {
-        _socket.push_back(-1);
-    }
 	_socket[0] = _serverFd;
 	while (true)
 	{
 		fd_set rfds = addNewSocket();
 		if (_serverFd == -1)
 			return ;
-		for (int i = 1; i < 1024; i++)
+		for (int i = 1; i < 1000; i++)
 		{
 			int valread = 0;
 			Parser *Parsedcmd;
@@ -83,6 +83,14 @@ void Server::launch()
 			else if (valread != 0 && Parsedcmd->getCmd() == USER)
 			{
 				setUsername(i, Parsedcmd);
+			}
+			else if (valread != 0 && Parsedcmd->getCmd() == QUIT)
+			{
+				std::list<User *>::iterator usrIt = StaticFunctions::findByFd(_users, _socket[i]);
+				if (usrIt != _users.end())
+					(*usrIt)->setFd(-1);
+				close(_socket[i]);
+				_socket[i] = -1;
 			}
 			else if (valread != 0 && strcmp(buff, "END\r\n") == 0)
 			{
@@ -152,7 +160,7 @@ fd_set Server::addNewSocket()
 	int addrlen = sizeof(_address);
 
 	FD_ZERO(&rfds);
-	for (int i = 0; i < 1024; i++)
+	for (int i = 0; i < 1000; i++)
 	{
 		if (_socket[i] >= 0)
 			FD_SET(_socket[i], &rfds);

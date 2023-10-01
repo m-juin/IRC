@@ -3,7 +3,7 @@
 
 Command getCmdEnum(std::string arg)
 {
-	std::string validCmd[] = {"PASS", "USER", "NICK", "JOIN", "MODE", "WHO"};
+	std::string validCmd[] = {"PASS", "USER", "NICK", "JOIN", "MODE", "WHO", "PART", "QUIT"};
 	size_t size = sizeof(validCmd) / sizeof(std::string);
 	for (size_t i = 0; i < size; i++)
 	{
