@@ -30,28 +30,36 @@ Parser::Parser(std::list<User *> usrs, int fd, std::string fullCmd)
 		std::cerr << "Unknown command: \"" << fullCmd << "\"\n";
 		return;
 	}
-	cmd = getCmdEnum(vstrings[0]);
-	if (cmd < 0)
+	_cmd = getCmdEnum(vstrings[0]);
+	if (_cmd < 0)
 	{
 		std::cerr << "Unknown command: \"" << vstrings[0] << "\"\n";
 		return;
 	}
-	else if (cmd == 3)
+	else if (_cmd == 3)
 	{
-		std::vector<std::string> tmp;
 		std::vector<std::string>::iterator it = vstrings.begin();
-		args = SplitCmd(*++it, ",");
+		std::vector<std::string> tmp = SplitCmd(*++it, ",");
+		std::vector<std::string> tmp2;
 		if (++it != vstrings.end())
-			args2 = SplitCmd(*it, ",");
+			tmp2 = SplitCmd(*it, ",");
+		std::size_t pos = 0;
+		while (pos < tmp.size())
+		{
+			if (pos < tmp2.size())
+				_joinArgs.push_back(std::pair<std::string, std::string>(tmp[pos], tmp2[pos]));
+			else
+				_joinArgs.push_back(std::pair<std::string, std::string>(tmp[pos], ""));
+			pos++;
+		}
 	}
 	else
 	{
 		std::vector<std::string>::iterator it = vstrings.begin();
 		std::vector<std::string>::iterator ite = vstrings.end();
-		while (it != ite)
+		while (++it != ite)
 		{
-			args.push_back(*it);
-			it++;
+			_args.push_back(*it);
 		}
 	}
 	std::list<User *>::iterator usrIt = StaticFunctions::findByFd(usrs, fd);
@@ -60,7 +68,7 @@ Parser::Parser(std::list<User *> usrs, int fd, std::string fullCmd)
 		std::cerr << "Unknown user fd: \"" << fd << "\"\n";
 		return;
 	}
-	op = *usrIt;
+	_op = *usrIt;
 }
 
 std::vector<std::string> Parser::SplitCmd(std::string str, const char *cs)
@@ -87,6 +95,26 @@ Parser::Parser(const Parser &parser)
 
 Parser::~Parser()
 {
+}
+
+Command Parser::getCmd()
+{
+	return _cmd;
+}
+
+std::vector<std::string> Parser::getArgs()
+{
+	return _args;
+}
+
+std::vector<std::pair<std::string, std::string> > Parser::getJoinArgs()
+{
+	return _joinArgs;
+}
+
+User *Parser::getOperator()
+{
+	return _op;
 }
 
 Parser &Parser::operator=(const Parser &parser)

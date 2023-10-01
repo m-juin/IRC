@@ -64,11 +64,11 @@ void Server::launch()
 				//std::memset(buff, 0, 1024);
 				// A delete test Parser:
 				Parsedcmd = new Parser(_users, _socket[i], buff);
-				std::vector<std::string>::iterator osef = Parsedcmd->args2.begin();
-				for (; osef != Parsedcmd->args2.end(); osef++)
-					std::cout << *osef << std::endl;
+				std::vector<std::pair<std::string, std::string> >::iterator osef = Parsedcmd->getJoinArgs().begin();
+				for (; osef != Parsedcmd->getJoinArgs().end(); osef++)
+					std::cout << "First = " << osef->first << "\nSecond =" << osef->second << std::endl;
 			}
-			if (valread != 0 && Parsedcmd->cmd == JOIN)
+			if (valread != 0 && Parsedcmd->getCmd() == JOIN)
 			{
 				//Check if pass is entered, username and nickname are set
 				if (isUserCorrectlyConnected(i) == false)
@@ -79,17 +79,17 @@ void Server::launch()
 				joinChannel(buff, i);
 				std::memset(buff, 0, 1024);
 			}
-			else if (valread != 0 && Parsedcmd->cmd == PASS)
+			else if (valread != 0 && Parsedcmd->getCmd() == PASS)
 			{
 				checkPass(buff, i);
 				std::memset(buff, 0, 1024);
 			}
-			else if (valread != 0 && Parsedcmd->cmd == NICK)
+			else if (valread != 0 && Parsedcmd->getCmd() == NICK)
 			{
 				setNickname(i, Parsedcmd);
 				std::memset(buff, 0, 1024);
 			}
-			else if (valread != 0 && Parsedcmd->cmd == USER)
+			else if (valread != 0 && Parsedcmd->getCmd() == USER)
 			{
 				setUsername(i, Parsedcmd);
 				std::memset(buff, 0, 1024);
@@ -316,7 +316,7 @@ void	Server::setNickname(int i, Parser *cmd)
 		return	;
 	std::list<User *>::iterator it = StaticFunctions::findByFd(_users, _socket[i]);
 	//std::cout << (*it)->getId() << std::endl;
-	std::vector<std::string>::iterator osef = cmd->args.begin();
+	std::vector<std::string>::iterator osef = cmd->getArgs().begin();
 	osef++;
 	//Check if nickname is empty
 	if ((*osef).size() == 0)
@@ -353,7 +353,7 @@ void	Server::setUsername(int i, Parser *cmd)
 		StaticFunctions::SendToFd(_socket[i], "Your nickname is not set", "", 0);
 		return;
 	}
-	std::vector<std::string>::iterator osef = cmd->args.begin();
+	std::vector<std::string>::iterator osef = cmd->getArgs().begin();
 	osef++;
 	if (!(*it)->getUsername().empty())
 	{

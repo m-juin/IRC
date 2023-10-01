@@ -8,23 +8,26 @@
 #ifndef PARSER_HPP
 #define PARSER_HPP
 
-enum Command {NONE = -1, PASS, USER, NICK, JOIN, MODE, WHO};
+enum Command {NONE = -1, PASS, USER, NICK, JOIN, MODE, WHO, PART, QUIT, PRIVMSG, TOPIC, KICK, INVITE, OPER, LIST};
 
 struct Parser
 {
 	public:
 		Parser(std::list<User *> usrs, int fd, std::string fullCmd);
 		~Parser();
-		Command cmd;
-		std::vector<std::string> args;
-		std::vector<std::string> args2;
-		User *op;
-		
+		Command getCmd();
+		std::vector<std::string> getArgs();
+		std::vector<std::pair<std::string, std::string> > getJoinArgs();
+		User * getOperator();
 	private:
 		std::vector<std::string> SplitCmd(std::string str, const char *cs);
 		Parser();
 		Parser(Parser const &parser);
 		Parser &operator=(Parser const &parser);
+		Command _cmd;
+		std::vector<std::string> _args;
+		std::vector<std::pair<std::string, std::string> > _joinArgs;
+		User *_op;
 };
 
 #endif
