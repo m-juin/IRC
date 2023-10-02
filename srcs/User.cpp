@@ -138,7 +138,19 @@ bool User::rmFlag(std::size_t channelID, char flag)
 std::string User::getFlags(std::size_t channelId)
 {
 	return getFlagsIndex(channelId)->second;
-} 
+}
+
+std::size_t User::getChanId(int idx)
+{
+	flagsPair::iterator	it = _channelsFlags.begin();
+	std::advance(it, idx);
+	return	it->first;
+}
+
+std::size_t User::getNbChannel() const
+{
+	return	_channelsFlags.size();
+}
 
 /*----------------------------------------------------------------------------------------------*/
 /*																								*/
@@ -149,18 +161,18 @@ std::string User::getFlags(std::size_t channelId)
 void User::connectChannel(std::size_t channelID)
 {
 	std::pair<std::size_t, std::string> newFlags = std::make_pair(channelID, "");
-	this->_channelsFlags.push_back(newFlags);
+	this->_channelsFlags.push_back(newFlags);	
 }
 
-void User::disconnectChannel(std::size_t channelID)
+void User::disconnectChannel(Channel *chn)
 {
-	flagsPair::iterator it = getFlagsIndex(channelID);
+	flagsPair::iterator it = getFlagsIndex(chn->getId());
 	if ( it == this->_channelsFlags.end() )
 	{
-		std::cerr << "User " << this->_username << "aren't connected to channel " << channelID << "!\n";
+		std::cerr << "User " << this->_username << " aren't connected to channel " << chn->getName() << "!\n";
 		return ;
 	}
-	std::cout << it->first << std::endl;
+	chn->leaveUser(this);
 	this->_channelsFlags.erase(it);
 }
 

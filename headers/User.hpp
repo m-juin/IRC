@@ -1,6 +1,7 @@
 #include <list>
 #include <iostream>
 #include <unistd.h>
+#include "StaticFunctions.hpp"
 #include "Channel.hpp"
 
 #ifndef USER_HPP
@@ -32,8 +33,11 @@ class User {
 		bool	rmFlag(std::size_t channelID, char flag);
 
 		void	connectChannel(std::size_t channelID);
-		void	disconnectChannel(std::size_t channelID);
-		std::string  getFlags(std::size_t channelId);
+		void	disconnectChannel(Channel *chn);
+
+		std::string  		getFlags(std::size_t channelId);
+		std::size_t			getChanId(int idx);
+		std::size_t			getNbChannel() const;
 
     private:
 		flagsPair::iterator		getFlagsIndex(std::size_t channelId);

@@ -37,8 +37,13 @@ class Server {
 
 		void joinChannel(std::pair<Command, std::string>cmd, int i);
 		void checkPass(std::pair<Command, std::string>cmd, int i);
+<<<<<<< HEAD
+		void quitServer(std::pair<Command, std::string>cmd, int i);
+
+=======
 		void setTopic(std::pair<Command, std::string>cmd, int i);
 		
+>>>>>>> d93c176af6f6a540b8a6b66a35f2346730725790
 		void setNickname(int i, std::pair<Command, std::string>cmd);
 		void setUsername(int i, std::pair<Command, std::string>cmd);
 
