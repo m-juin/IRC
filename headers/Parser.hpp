@@ -16,20 +16,15 @@ struct Parser
 		Parser(std::list<User *> usrs, int fd, std::string fullCmd);
 		~Parser();
 		Command getCmd();
-		std::vector<std::string> getArgs();
-		std::vector<std::pair<std::string, std::string> > getJoinArgs();
+		std::vector<std::pair<Command, std::string> > getArgs();
 		User * getOperator();
-		std::string getFullCmd();
 	private:
 		std::vector<std::string> SplitCmd(std::string str, const char *cs);
 		Parser();
 		Parser(Parser const &parser);
 		Parser &operator=(Parser const &parser);
-		Command _cmd;
-		std::vector<std::string> _args;
-		std::vector<std::pair<std::string, std::string> > _joinArgs;
+		std::vector<std::pair<Command, std::string> > _args;
 		User *_op;
-		std::string _fullCmd;
 };
 
 #endif

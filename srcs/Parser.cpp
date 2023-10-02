@@ -16,47 +16,54 @@ Command getCmdEnum(std::string arg)
 
 Parser::Parser(std::list<User *> usrs, int fd, std::string fullCmd)
 {
+	std::vector<std::string> lines;
 	fullCmd = fullCmd.substr(0, fullCmd.size() - 2);
-	std::cout << fullCmd << std::endl;
-	_fullCmd = fullCmd;
-	if (fullCmd.size() < 3)
+	lines = SplitCmd(fullCmd, "\n");
+	for (std::vector<std::string>::iterator i = lines.begin(); i != lines.end(); i++)
 	{
-		std::cerr << "Unknown command: \"" << fullCmd << "\"\n";
-		return;
-	}
-	std::vector<std::string> vstrings = SplitCmd(fullCmd, " ");
-	if (vstrings.size() < 1)
-	{
-		std::cerr << "Unknown command: \"" << fullCmd << "\"\n";
-		return;
-	}
-	_cmd = getCmdEnum(vstrings[0]);
-	if (_cmd < 0)
-	{
-		std::cerr << "Unknown command: \"" << vstrings[0] << "\"\n";
-		return;
-	}
-	else if (_cmd == 3)
-	{
-		std::vector<std::string>::iterator it = vstrings.begin();
-		std::vector<std::string> tmp = SplitCmd(*++it, ",");
-		std::vector<std::string> tmp2;
-		if (++it != vstrings.end())
-			tmp2 = SplitCmd(*it, ",");
-		std::size_t pos = 0;
-		while (pos < tmp.size())
+		std::vector<std::string> words = SplitCmd(*i, " ");
+		Command cmd = getCmdEnum(words[0]);
+		if (cmd == JOIN || cmd == PART)
 		{
-			_joinArgs.push_back(std::pair<std::string, std::string>(tmp[pos], (pos < tmp2.size() ? tmp2[pos] : "")));
-			pos++;
+			std::vector<std::string> channels;
+			std::vector<std::string> pwds;
+			if (words.size() > 1)
+				channels = SplitCmd(words[1], ",");
+			else
+			{
+				std::cerr << "/JOIN Error: need at list one channel to join\n";
+				return ;
+			}
+			if (words.size() > 2)
+				pwds = SplitCmd(words[2], ",");
+			for (size_t y = 0; y < channels.size(); y++)
+			{
+				std::string msg;
+				msg += channels[y];
+				if (pwds.size() > y)
+					msg += " " + pwds[y];
+				_args.push_back(std::make_pair(cmd, msg));
+			}
+		}
+		else
+		{
+			std::string msg;
+			size_t y = 1;
+			while (y < words.size())
+			{
+				msg += words[y];
+				y++;
+				if (y < words.size())
+					msg += " ";
+			}
+			_args.push_back(std::make_pair(cmd, msg));
 		}
 	}
-	else
+	for (size_t i = 0; i < _args.size(); i++)
 	{
-		std::vector<std::string>::iterator it = vstrings.begin();
-		std::vector<std::string>::iterator ite = vstrings.end();
-		while (++it != ite)
-			_args.push_back(*it);
+		std::cout << "CMD = " << _args[i].first << "\n	ARGS = " << _args[i].second << std::endl;
 	}
+	
 	std::list<User *>::iterator usrIt = StaticFunctions::findByFd(usrs, fd);
 	if (usrIt == usrs.end())
 	{
@@ -92,19 +99,11 @@ Parser::~Parser()
 {
 }
 
-Command Parser::getCmd()
-{
-	return _cmd;
-}
 
-std::vector<std::string> Parser::getArgs()
+
+std::vector<std::pair<Command, std::string> > Parser::getArgs()
 {
 	return _args;
-}
-
-std::vector<std::pair<std::string, std::string> > Parser::getJoinArgs()
-{
-	return _joinArgs;
 }
 
 User *Parser::getOperator()
@@ -112,10 +111,6 @@ User *Parser::getOperator()
 	return _op;
 }
 
-std::string Parser::getFullCmd()
-{
-	return _fullCmd;
-}
 
 Parser &Parser::operator=(const Parser &parser)
 {
