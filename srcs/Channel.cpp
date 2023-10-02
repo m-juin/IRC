@@ -149,30 +149,17 @@ void	Channel::changeTopic(User *usr, std::string newTopic)
 void		Channel::kickUser(User *op, std::string &name)
 {
 	std::list<User *>::iterator its = find(this->_users.begin(), this->_users.end(), name);
-	if (its == _users.end())
-	{
-		std::cerr << "No users found to kick" << std::endl;
-		return	;
-	}
 	if (op->getFlags(this->_id).find('o') == std::string::npos)
 	{
 		std::cerr << "Insufficient permissions to kick" << std::endl;
 		return	;
 	}
-	(*its)->disconnectChannel(this->_id);
-	this->_users.erase(its);
+	(*its)->disconnectChannel(this);
 }
 
 void		Channel::leaveUser(User *usr)
 {
 	std::list<User *>::iterator its = find(this->_users.begin(), this->_users.end(), usr);
-	if (its == _users.end())
-	{
-		std::cout << "Something is off with the leaveUser" << std::endl;
-		return	;
-	}
-	(*its)->disconnectChannel(this->_id);
-	std::cout << this->_id << std::endl;
 	this->_users.erase(its);
 }
 

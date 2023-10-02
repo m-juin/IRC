@@ -14,6 +14,18 @@ std::list<User *>::iterator StaticFunctions::findByFd(std::list<User *> &usr, in
 	return	ite;
 }
 
+std::list<Channel *>::iterator StaticFunctions::findChannelById(std::list<Channel *> &channels, std::size_t id)
+{
+	std::list<Channel *>::iterator it;
+	std::list<Channel *>::iterator ite = channels.end();
+	for (it = channels.begin(); it != ite; it++)
+	{
+		if ((*it)->getId() == id)
+			return	it;
+	}
+	return	ite;
+}
+
 void StaticFunctions::SendToFd(int fd, std::string str, std::string str2, int flag)
 {
 	std::string toSend = str + str2 + "\r\n";

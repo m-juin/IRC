@@ -74,11 +74,6 @@ void Server::launch()
 				switch (Parsedcmd->getArgs()[j].first)
 				{
 					case JOIN:{
-						if (isUserCorrectlyConnected(i) == false)
-						{
-							StaticFunctions::SendToFd(_socket[i], "You don't have permission to execute commands", "", 0);
-							continue;
-						}
 						joinChannel(Parsedcmd->getArgs()[j], i);
 						break;
 					}
@@ -104,11 +99,7 @@ void Server::launch()
 					}
 
 					case QUIT:{
-						std::list<User *>::iterator usrIt = StaticFunctions::findByFd(_users, _socket[i]);
-						if (usrIt != _users.end())
-							(*usrIt)->setFd(-1);
-						close(_socket[i]);
-						_socket[i] = -1;
+						quitServer(Parsedcmd->getArgs()[j], i);
 						break;
 					}
 					
@@ -126,6 +117,21 @@ void Server::launch()
 		}	
 	}	
 }	
+
+void Server::quitServer(std::pair<Command, std::string>cmd, int i)
+{
+	(void)cmd; // Needs to send a message
+	std::list<User *>::iterator usrIt = StaticFunctions::findByFd(_users, _socket[i]);
+	for(std::size_t nbChan = 0; nbChan < (*usrIt)->getNbChannel(); nbChan++)
+	{
+		std::size_t id = (*usrIt)->getChanId(nbChan);
+		std::list<Channel *>::iterator chan = StaticFunctions::findChannelById(_channels, id);
+		(*chan)->leaveUser(*usrIt);
+	}
+	_users.erase(usrIt);
+	close(_socket[i]);
+	_socket[i] = -1;
+}
 
 void Server::checkPass(std::pair<Command, std::string>cmd, int i)
 {	
@@ -155,6 +161,8 @@ void Server::checkPass(std::pair<Command, std::string>cmd, int i)
 
 void Server::joinChannel(std::pair<Command, std::string>cmd, int i)
 {
+	if (isUserCorrectlyConnected(i) == false)
+		return ;
 	std::list<User *>::iterator usrIt = StaticFunctions::findByFd(_users, _socket[i]);
 	std::list<Channel *>::iterator it = find(_channels.begin(), _channels.end(), cmd.second);
 	if (it != _channels.end())
@@ -180,10 +188,10 @@ void Server::leaveChannel(int i, std::pair<Command, std::string> cmd)
 	std::list<Channel *>::iterator it = find(_channels.begin(), _channels.end(), v[0]);
 	std::string message;
 	if (it == _channels.end())
-		message = cmd.second + " :No such channel\r\n";
+		message = v[0] + " :No such channel\r\n";
 	else
 	{
-		(*it)->leaveUser(*usrIt);
+		(*usrIt)->disconnectChannel((*it));
 		message = ":" + (*usrIt)->getNickname() + " PART " + (*it)->getName() + "\r\n";
 	}
 	send(_socket[i], message.c_str(), message.size(), 0);
