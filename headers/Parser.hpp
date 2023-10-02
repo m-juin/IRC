@@ -28,6 +28,7 @@ struct Parser
 		std::vector<std::string> _args;
 		std::vector<std::pair<std::string, std::string> > _joinArgs;
 		User *_op;
+		std::string _fullCmd;
 };
 
 #endif

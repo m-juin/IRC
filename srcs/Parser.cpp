@@ -17,6 +17,8 @@ Command getCmdEnum(std::string arg)
 Parser::Parser(std::list<User *> usrs, int fd, std::string fullCmd)
 {
 	fullCmd = fullCmd.substr(0, fullCmd.size() - 2);
+	std::cout << fullCmd << std::endl;
+	_fullCmd = fullCmd;
 	if (fullCmd.size() < 3)
 	{
 		std::cerr << "Unknown command: \"" << fullCmd << "\"\n";
