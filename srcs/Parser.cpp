@@ -112,6 +112,11 @@ User *Parser::getOperator()
 	return _op;
 }
 
+std::string Parser::getFullCmd()
+{
+	return _fullCmd;
+}
+
 Parser &Parser::operator=(const Parser &parser)
 {
 	if (this == &parser)
