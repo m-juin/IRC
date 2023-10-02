@@ -368,9 +368,8 @@ void	Server::messageChannel(int i, std::pair<Command, std::string> cmd, User *op
 
 void Server::setTopic(std::pair<Command, std::string>cmd, int i)
 {
-	//TODO: faire un check si le user est op du channel
 	std::vector<std::string> v = Parser::SplitCmd(cmd.second, " ");
-		std::list<User *>::iterator op = StaticFunctions::findByFd(_users, _socket[i]);
+	std::list<User *>::iterator currentUser = StaticFunctions::findByFd(_users, _socket[i]);
 	Channel * myChan = getChannel(v[0]);
 	if (myChan == NULL)
 		return ;
@@ -390,12 +389,13 @@ void Server::setTopic(std::pair<Command, std::string>cmd, int i)
 		}
 		return ;
 	}
+	if (myChan->isUserOp(*currentUser) == false)
+		return ;// mettre un message comme quoi il a pas les permissions 
+	myChan->setTopic(v[1]);
 	for (; it != usr.end(); ++it)
 	{
-		std::string message = ":" + (*op)->getNickname() + " TOPIC " + cmd.second + "\r\n";
-		std::vector<std::string> w = Parser::SplitCmd(cmd.second, ":");
-		myChan->setTopic(v[1]);
-		send((*it)->getFd(), message.c_str(), message.size(), 0);
+			std::string message = ":" + (*currentUser)->getNickname() + " TOPIC " + cmd.second + "\r\n";
+			send((*it)->getFd(), message.c_str(), message.size(), 0);
 	}
 }
 
