@@ -18,7 +18,7 @@ Parser::Parser(std::list<User *> usrs, int fd, std::string fullCmd)
 {
 	std::vector<std::string> lines;
 	fullCmd = fullCmd.substr(0, fullCmd.size() - 2);
-	lines = SplitCmd(fullCmd, "\n");
+	lines = SplitCmd(fullCmd, "\r\n");
 	for (std::vector<std::string>::iterator i = lines.begin(); i != lines.end(); i++)
 	{
 		std::vector<std::string> words = SplitCmd(*i, " ");

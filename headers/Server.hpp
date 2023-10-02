@@ -35,14 +35,14 @@ class Server {
 		bool isUserCorrectlyConnected(int i);
 		bool isUserAuthenticated(int i);
 
-		void joinChannel(Parser *cmd, int i);
-		void checkPass(Parser *cmd, int i);
+		void joinChannel(std::pair<Command, std::string>cmd, int i);
+		void checkPass(std::pair<Command, std::string>cmd, int i);
 
-		void setNickname(int i, Parser *cmd);
-		void setUsername(int i, Parser *cmd);
+		void setNickname(int i, std::pair<Command, std::string>cmd);
+		void setUsername(int i, std::pair<Command, std::string>cmd);
 
-		void messageChannel(int i, Parser *cmd);
-		void leaveChannel(int i, Parser *cmd);
+		void messageChannel(int i, std::pair<Command, std::string>cmd, User *op);
+		void leaveChannel(int i, std::pair<Command, std::string>cmd);
 
 	private:
         std::list<Channel*>		_channels;
