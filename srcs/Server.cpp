@@ -175,8 +175,9 @@ void Server::joinChannel(std::pair<Command, std::string>cmd, int i)
 
 void Server::leaveChannel(int i, std::pair<Command, std::string> cmd)
 {
+	std::vector<std::string> v = Parser::SplitCmd(cmd.second, " ");
 	std::list<User *>::iterator usrIt = StaticFunctions::findByFd(_users, _socket[i]);
-	std::list<Channel *>::iterator it = find(_channels.begin(), _channels.end(), cmd.second);
+	std::list<Channel *>::iterator it = find(_channels.begin(), _channels.end(), v[0]);
 	std::string message;
 	if (it == _channels.end())
 		message = cmd.second + " :No such channel\r\n";
@@ -344,7 +345,8 @@ void	Server::setUsername(int i, std::pair<Command, std::string> cmd)
 
 void	Server::messageChannel(int i, std::pair<Command, std::string> cmd, User *op)
 {
-	Channel * myChan = getChannel(cmd.second);
+	std::vector<std::string> v = Parser::SplitCmd(cmd.second, " ");
+	Channel * myChan = getChannel(v[0]);
 	if (myChan == NULL)
 		return ;
 	std::list<User *> usr = myChan->getUsers();
@@ -353,7 +355,7 @@ void	Server::messageChannel(int i, std::pair<Command, std::string> cmd, User *op
 	{
 		if (_socket[i] != (*it)->getFd())
 		{
-			std::string message = ":" + op->getNickname() + " " + cmd.second + "\r\n";
+			std::string message = ":" + op->getNickname() + " PRIVMSG " + cmd.second + "\r\n";
 			send((*it)->getFd(), message.c_str(), message.size(), 0);
 		}
 	}

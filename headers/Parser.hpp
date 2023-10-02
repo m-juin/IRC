@@ -18,9 +18,10 @@ struct Parser
 		Command getCmd();
 		std::vector<std::pair<Command, std::string> > getArgs();
 		User * getOperator();
+		static std::vector<std::string> SplitCmd(std::string str, const char *cs);
 		
 	private:
-		std::vector<std::string> SplitCmd(std::string str, const char *cs);
+		
 		Parser();
 		Parser(Parser const &parser);
 		Parser &operator=(Parser const &parser);
