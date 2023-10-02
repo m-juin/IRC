@@ -101,6 +101,7 @@ void Server::launch()
 				close(_serverFd);
 				return ;
 			}
+//			creer privmsgChannel et privmsg
 			else if (valread > 0 && Parsedcmd->getArgs().size() != 0)
 			{
 				messageChannel(i, Parsedcmd);
@@ -307,7 +308,7 @@ void	Server::setUsername(int i, Parser *cmd)
 		return;
 	}
 	(*it)->setUsername(cmd->getArgs()[0]);
-	std::cout << "New client: " << (*it)->getFd() << " " << (*it)->getUsername() << " " << (*it)->getNickname() << std::endl;
+	StaticFunctions::SendToFd(_socket[i], ":irc.example.com 001 " + (*it)->getNickname() + " :Welcome to the IRC Network " + cmd->getArgs()[0], "", 0);
 }
 
 void	Server::messageChannel(int i, Parser *cmd)
@@ -321,7 +322,7 @@ void	Server::messageChannel(int i, Parser *cmd)
 	{
 		if (_socket[i] != (*it)->getFd())
 		{
-			std::string message = ":" + (*it)->getNickname() + " PRIVMSG " + cmd->getArgs()[1] + "\r\n";
+			std::string message = ":" + cmd->getOperator()->getNickname() + " " + cmd->getFullCmd() + "\r\n";
 			send((*it)->getFd(), message.c_str(), message.size(), 0);
 		}
 	}
