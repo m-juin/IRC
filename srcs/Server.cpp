@@ -61,9 +61,12 @@ void Server::launch()
 			if (_socket[i] > 0 && FD_ISSET(_socket[i], &rfds))
 			{
 				valread = recv(_socket[i], buff, 1024, 0);
-				Parsedcmd = new Parser(_users, _socket[i], buff);
+				if (valread > 0)
+					Parsedcmd = new Parser(_users, _socket[i], buff);
 			}
-			if (valread != 0 && Parsedcmd->getCmd() == JOIN)
+			else
+				continue ;
+			if (valread > 0 && Parsedcmd->getCmd() == JOIN)
 			{
 				if (isUserCorrectlyConnected(i) == false)
 				{
@@ -72,19 +75,19 @@ void Server::launch()
 				}
 				joinChannel(Parsedcmd, i);
 			}
-			else if (valread != 0 && Parsedcmd->getCmd() == PASS)
+			else if (valread > 0 && Parsedcmd->getCmd() == PASS)
 			{
 				checkPass(Parsedcmd, i);
 			}	
-			else if (valread != 0 && Parsedcmd->getCmd() == NICK)
+			else if (valread > 0 && Parsedcmd->getCmd() == NICK)
 			{
 				setNickname(i, Parsedcmd);
 			}
-			else if (valread != 0 && Parsedcmd->getCmd() == USER)
+			else if (valread > 0 && Parsedcmd->getCmd() == USER)
 			{
 				setUsername(i, Parsedcmd);
 			}
-			else if (valread != 0 && Parsedcmd->getCmd() == QUIT)
+			else if (valread > 0 && Parsedcmd->getCmd() == QUIT)
 			{
 				std::list<User *>::iterator usrIt = StaticFunctions::findByFd(_users, _socket[i]);
 				if (usrIt != _users.end())
@@ -92,17 +95,18 @@ void Server::launch()
 				close(_socket[i]);
 				_socket[i] = -1;
 			}
-			else if (valread != 0 && strcmp(buff, "END\r\n") == 0)
+			else if (valread > 0 && strcmp(buff, "END\r\n") == 0)
 			{
 				closeAllSocket();
 				close(_serverFd);
 				return ;
 			}
-			else if (valread != 0 && Parsedcmd->getArgs().size() != 0)
+			else if (valread > 0 && Parsedcmd->getArgs().size() != 0)
 			{
 				messageChannel(i, Parsedcmd);
 			}
-			std::memset(buff, 0, 1024);
+			if (valread > 0)
+				std::memset(buff, 0, 1024);
 		}
 	}
 }
@@ -141,7 +145,6 @@ void Server::joinChannel(Parser *cmd, int i)
 	{
 		StaticFunctions::SendToFd(_socket[i], "You joined channel ", cmd->getJoinArgs()[0].first, 0);
 		(*it)->addUser(*usrIt);
-		return ;
 	}
 	else if (it == _channels.end())
 	{
@@ -168,7 +171,7 @@ fd_set Server::addNewSocket()
 	switch (select(FD_SETSIZE,  &rfds, NULL, NULL, NULL))
 	{
 		case 0:
-			break;
+			break ;
 		case -1:
 		{
 			std::cout << "Error select" << std::endl;
