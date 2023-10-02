@@ -35,6 +35,7 @@ class Channel {
 		void	rmOperator(User *op, std::string &name);
 		void	rmFlag(char flag, User *op);
 		
+		void	leaveUser(User *usr);
 		void	changeTopic(User *usr, std::string newTopic);
 		void	changeUserLimit(User *usr, std::size_t limit);
 

@@ -160,6 +160,7 @@ void User::disconnectChannel(std::size_t channelID)
 		std::cerr << "User " << this->_username << "aren't connected to channel " << channelID << "!\n";
 		return ;
 	}
+	std::cout << it->first << std::endl;
 	this->_channelsFlags.erase(it);
 }
 

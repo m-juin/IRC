@@ -163,6 +163,19 @@ void		Channel::kickUser(User *op, std::string &name)
 	this->_users.erase(its);
 }
 
+void		Channel::leaveUser(User *usr)
+{
+	std::list<User *>::iterator its = find(this->_users.begin(), this->_users.end(), usr);
+	if (its == _users.end())
+	{
+		std::cout << "Something is off with the leaveUser" << std::endl;
+		return	;
+	}
+	(*its)->disconnectChannel(this->_id);
+	std::cout << this->_id << std::endl;
+	this->_users.erase(its);
+}
+
 void		Channel::addOperator(User *op, std::string &name)
 {
 	if (isUserOp(op) == false)

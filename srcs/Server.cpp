@@ -87,6 +87,10 @@ void Server::launch()
 			{
 				setUsername(i, Parsedcmd);
 			}
+			else if (valread > 0 && Parsedcmd->getCmd() == PART)
+			{
+				leaveChannel(i, Parsedcmd);
+			}
 			else if (valread > 0 && Parsedcmd->getCmd() == QUIT)
 			{
 				std::list<User *>::iterator usrIt = StaticFunctions::findByFd(_users, _socket[i]);
@@ -156,6 +160,22 @@ void Server::joinChannel(Parser *cmd, int i)
 	}
 	std::string message = ":" + (*usrIt)->getNickname() + " JOIN " + (*it)->getName() + "\r\n";
 	send(_socket[i], message.c_str(), message.size(), 0);
+}
+
+void Server::leaveChannel(int i, Parser *cmd)
+{
+	std::list<User *>::iterator usrIt = StaticFunctions::findByFd(_users, _socket[i]);
+	std::list<Channel *>::iterator it = find(_channels.begin(), _channels.end(), cmd->getArgs()[0]);
+	std::string message;
+	if (it == _channels.end())
+		message = cmd->getArgs()[0] + " :No such channel\r\n";
+	else
+	{
+		(*it)->leaveUser(*usrIt);
+		message = ":" + (*usrIt)->getNickname() + " PART " + (*it)->getName() + "\r\n";
+	}
+	send(_socket[i], message.c_str(), message.size(), 0);
+	std::cout << message << std::endl;
 }
 
 fd_set Server::addNewSocket()

@@ -42,6 +42,7 @@ class Server {
 		void setUsername(int i, Parser *cmd);
 
 		void messageChannel(int i, Parser *cmd);
+		void leaveChannel(int i, Parser *cmd);
 
 	private:
         std::list<Channel*>		_channels;
