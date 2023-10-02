@@ -113,11 +113,14 @@ void Server::launch()
 					}
 					
 					//	creer privmsgChannel et privmsg
-					default:
+					case PRIVMSG:
 					{
-						messageChannel(i, Parsedcmd->getArgs()[i], Parsedcmd->getOperator());
+						messageChannel(i, Parsedcmd->getArgs()[j], Parsedcmd->getOperator());
 						break;
 					}
+
+					default:
+						break;
 				}
 			}
 		}	
