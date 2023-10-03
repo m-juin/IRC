@@ -171,7 +171,6 @@ void Server::quitServer(std::pair<Command, std::string>cmd, int i)
 			if (_socket[i] != (*itUserChan)->getFd())
 			{
 				std::string message = ":" + (*usrIt)->getNickname() + " PRIVMSG " + (*chan)->getName() + " is exiting the network with the message : \"" + cmd.second + "\"\r\n";
-				std::cout << message << std::endl;
 				send((*itUserChan)->getFd(), message.c_str(), message.size(), 0);
 			}
 		}
