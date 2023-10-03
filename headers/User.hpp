@@ -29,6 +29,7 @@ class User {
 		void 	setNickname(std::string value);
 		void	setFd(int value);
 
+		void	updateFlag(std::size_t channelID, const std::string flag);
 		bool	addFlag(std::size_t channelID, char flag);
 		bool	rmFlag(std::size_t channelID, char flag);
 

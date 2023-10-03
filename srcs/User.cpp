@@ -99,6 +99,35 @@ flagsPair::iterator User::getFlagsIndex(std::size_t channelID)
 	return ite;
 }
 
+bool	isValidFlag(const char c)
+{
+	const std::string validFlag = "o";
+	if (validFlag.find(c) != validFlag.npos)
+		return true;
+	return false;
+}
+
+void	User::updateFlag(std::size_t channelID, const std::string flag)
+{
+	if (flag.size() < 2 || flag.size() > 2)
+	{
+		std::cerr << "Invalid flag: " << flag << std::endl;
+		return ;
+	}
+	if (isValidFlag(flag[1]) == false)
+	{
+		std::cerr << "User flag error: Invalid flag: \'" << flag[1] << "\'" << std::endl;
+		return ;
+	}
+	if (flag[0] == '+')
+		addFlag(channelID, flag[1]);
+	else if (flag[0] == '-')
+		rmFlag(channelID, flag[1]);
+	else
+		std::cerr << "User flag error: Invalid flag sign: \'" << flag[0] << "\'" << std::endl;
+
+}
+
 bool User::addFlag(std::size_t channelID, char flag)
 {
 	flagsPair::iterator it = getFlagsIndex(channelID);
