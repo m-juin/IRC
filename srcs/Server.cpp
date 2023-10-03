@@ -129,6 +129,7 @@ void Server::launch()
 
 void Server::changeModeChannel(std::pair<Command, std::string>cmd, int i)
 {
+	//TODO: BEAUCOUPPPPPPPPPPP DE MESSAGE
 	std::list<User *>::iterator usrIt = StaticFunctions::findByFd(_users, _socket[i]);
 	std::vector<std::string> v = Parser::SplitCmd(cmd.second, " ");
 	std::list<Channel *>::iterator it = find(_channels.begin(), _channels.end(), v[0]);
@@ -144,10 +145,20 @@ void Server::changeModeChannel(std::pair<Command, std::string>cmd, int i)
 		std::cout << "error params" << std::endl;//TODO: message
 		return;
 	}
-	if (v[1][1] != 'i' && v[1][1] != 't' && v[1][1] != 'k' && v[1][1] != 'o'  && v[1][1] != 'l')
+	if (v[1][1] != 'i' && v[1][1] != 't' && v[1][1] != 'k'  && v[1][1] != 'l' && v[1][1] != 'o')
 	{
 		std::cout << "error mode "  << v[1] << std::endl;//TODO: message
 		return ;
+	}
+	if (v[1][0] == '+' && v[1][1] == 'o' && !v[3].empty())
+	{
+		(*it)->addOperator(*usrIt, v[3]);
+		return;
+	}
+	else if (v[1][0] == '-' && v[1][1] == 'o' && !v[3].empty())
+	{
+		(*it)->suppOperator(*usrIt, v[3]);
+		return;
 	}
 	if (v[1][0] == '+')
 		(*it)->addFlag(v[1][1], *usrIt);
@@ -443,9 +454,9 @@ void Server::setTopic(std::pair<Command, std::string>cmd, int i)
 		}
 		return ;
 	}
+	myChan->changeTopic(*currentUser, cmd.second);
 	if (myChan->isUserOp(*currentUser) == false)
 		return ;// mettre un message comme quoi il a pas les permissions 
-	myChan->setTopic(v[1]);
 	for (; it != usr.end(); ++it)
 	{
 			std::string message = ":" + (*currentUser)->getNickname() + " TOPIC " + cmd.second + "\r\n";
