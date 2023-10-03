@@ -137,7 +137,7 @@ void	Channel::rmFlag(char flag, User *op)
 		return	;
 	std::size_t idx = this->_channelMod.find(flag);
 	if (idx != std::string::npos)
-		this->_channelMod.erase(idx);
+		this->_channelMod.erase(idx, 1);
 	else
 		std::cerr << "Permissions not set to this channel" << std::endl;
 }
@@ -208,6 +208,19 @@ void		Channel::addOperator(User *op, std::string &name)
 		return	;
 	}
 	(*its)->addFlag(this->_id, 'o');
+}
+
+void	Channel::suppOperator(User *op, std::string &name)
+{
+	if (isUserOp(op) == false)
+		return	;
+	std::list<User *>::iterator its = find(this->_users.begin(), this->_users.end(), name);
+	if (its == _users.end())
+	{
+		std::cerr << "No users found to op" << std::endl;
+		return	;
+	}
+	(*its)->rmFlag(this->_id, 'o');
 }
 
 void		Channel::rmOperator(User *op, std::string &name)

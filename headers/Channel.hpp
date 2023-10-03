@@ -32,6 +32,7 @@ class Channel {
 		void	addFlag(char flag, User *op);
 		void	addUser(User *user);
 		void	addOperator(User *op, std::string &name);
+		void	suppOperator(User *op, std::string &name);
 		
 		void	kickUser(User *op, std::string &name);
 		void	rmOperator(User *op, std::string &name);
