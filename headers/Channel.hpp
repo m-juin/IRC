@@ -23,23 +23,24 @@ class Channel {
 		std::string 		getPassword()	const;		
 		std::string 		getTopic()		const;
 		std::size_t 		getId() 		const;
+		std::size_t 		getUserLimit()	const;
 		std::list<User *>	getUsers()		const;
 		std::string			getChannelMod() const;
 
 		void	setName(std::string &name);		
-		void	setPassword(std::string &password);		
-		void	setTopic(std::string &topic);		
+		void	setPassword(std::string &password);
+		void	setUserLimit(std::size_t usr);		
+		void	setTopic(std::string &topic);	
 
 		void	updateFlag(const std::string flag, User *op);
 		void	addFlag(char flag, User *op);
 		void	addUser(User *user);
 		void	addOperator(User *op, std::string &name);
-		void	suppOperator(User *op, std::string &name);
 		
+		void	rmFlag(char flag, User *op);
 		void	kickUser(User *op, std::string &name);
 		void	rmOperator(User *op, std::string &name);
-		void	rmFlag(char flag, User *op);
-		
+
 		void	leaveUser(User *usr);
 		void	changeTopic(User *usr, std::string newTopic);
 		void	changeUserLimit(User *usr, std::size_t limit);
@@ -54,7 +55,7 @@ class Channel {
 		std::size_t		_usersLimit;
 		std::string		_password;
 		std::string		_channelMod;
-		
+
 		std::list<User *>	_users;
 		
 		Channel(void);
