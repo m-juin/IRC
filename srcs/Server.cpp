@@ -5,7 +5,7 @@
 #include <sys/select.h>
 #include <string>
 #include <sstream>
-
+#include "Define.hpp"
 
 Server::Server(std::size_t port, std::string password)
 {
@@ -133,23 +133,35 @@ void Server::changeModeChannel(std::pair<Command, std::string>cmd, int i)
 	std::list<User *>::iterator usrIt = StaticFunctions::findByFd(_users, _socket[i]);
 	std::vector<std::string> v = Parser::SplitCmd(cmd.second, " ");
 	std::list<Channel *>::iterator it = find(_channels.begin(), _channels.end(), v[0]);
-	if (it == _channels.end() || v.size() < 2)
+	if (it == _channels.end())
 	{
-		std::cerr << "not found" << std::endl;//TODO: message
+		StaticFunctions::SendToFd(_socket[i], ERR_NOSUCHCHANNEL, "", 0);
+		return ;
+	}
+	if (v.size() < 2)
+	{
+		StaticFunctions::SendToFd(_socket[i], ERR_NEEDMOREPARAMS, "", 0);
 		return ;
 	}
 	if ((*it)->isUserOp(*usrIt) == false)
-		return ; //TODO: message 
+	{
+		StaticFunctions::SendToFd(_socket[i], ERR_CHANOPRIVSNEEDED, "", 0);
+		return ;
+	}
 	if (!v[1].empty() && v[1].size() != 2)
 	{
-		std::cout << "error params" << std::endl;//TODO: message
+		StaticFunctions::SendToFd(_socket[i], ERR_NEEDMOREPARAMS, "", 0);
 		return;
 	}
 	if (v[1][1] != 'i' && v[1][1] != 't' && v[1][1] != 'k'  && v[1][1] != 'l' && v[1][1] != 'o')
 	{
-		std::cout << "error mode "  << v[1] << std::endl;//TODO: message
+		StaticFunctions::SendToFd(_socket[i], ERR_UMODEUNKNOWNFLAG, "", 0);
 		return ;
 	}
+	if (v[1][0] == '+')
+		(*it)->addFlag(v[1][1], *usrIt);
+	else if (v[1][0] == '-')
+		(*it)->rmFlag(v[1][1], *usrIt);
 	if (v[1][0] == '+' && v[1][1] == 'o' && !v[3].empty())
 	{
 		(*it)->addOperator(*usrIt, v[3]);
@@ -157,13 +169,9 @@ void Server::changeModeChannel(std::pair<Command, std::string>cmd, int i)
 	}
 	else if (v[1][0] == '-' && v[1][1] == 'o' && !v[3].empty())
 	{
-		(*it)->suppOperator(*usrIt, v[3]);
+		(*it)->rmOperator(*usrIt, v[3]);
 		return;
 	}
-	if (v[1][0] == '+')
-		(*it)->addFlag(v[1][1], *usrIt);
-	else if (v[1][0] == '-')
-		(*it)->rmFlag(v[1][1], *usrIt);
 	std::cout << "sur " + v[0] + " " + (*it)->getChannelMod() << std::endl;
 }
 
