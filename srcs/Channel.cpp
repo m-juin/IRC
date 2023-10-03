@@ -97,7 +97,7 @@ bool	Channel::isUserOp(User *op)
 	return	true;
 }
 
-bool	isValidFlag(const char c)
+static bool	isValidFlag(const char c)
 {
 	const std::string validFlag = "pitlk";
 	if (validFlag.find(c) != validFlag.npos)
