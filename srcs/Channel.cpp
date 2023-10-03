@@ -35,7 +35,6 @@ Channel & Channel::operator=(Channel const & src)
 		this->_password = src._password;
 		this->_name = src._name;
 		this->_topic = src._topic;
-
 		this->_id = 0;
 	}
 	return	*this;
@@ -61,6 +60,11 @@ std::string	Channel::getPassword() const
 	return	this->_password;
 }
 
+std::size_t	Channel::getUserLimit() const
+{
+	return	this->_usersLimit;
+}
+
 std::string	Channel::getTopic() const
 {
 	return	this->_topic;
@@ -79,6 +83,11 @@ void		Channel::setName(std::string &name)
 void		Channel::setPassword(std::string &password)
 {
 	this->_password = password;
+}
+
+void		Channel::setUserLimit(std::size_t usr)
+{
+	this->_usersLimit = usr;
 }
 
 void		Channel::setTopic(std::string &topic)
