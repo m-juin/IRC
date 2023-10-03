@@ -22,6 +22,7 @@ class Channel {
 		std::string 		getTopic()		const;
 		std::size_t 		getId() 		const;
 		std::list<User *>	getUsers()		const;
+		std::string			getChannelMod() const;
 
 		void	setName(std::string &name);		
 		void	setPassword(std::string &password);		

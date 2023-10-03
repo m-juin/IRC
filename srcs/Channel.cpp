@@ -41,6 +41,11 @@ Channel & Channel::operator=(Channel const & src)
 	return	*this;
 }
 
+std::string Channel::getChannelMod() const
+{
+	return this->_channelMod;
+}
+
 std::list<User *> Channel::getUsers() const
 {
 	return this->_users;
