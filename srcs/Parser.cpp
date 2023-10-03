@@ -31,7 +31,7 @@ Parser::Parser(std::list<User *> usrs, int fd, std::string fullCmd)
 				channels = SplitCmd(words[1], ",");
 			else
 			{
-				std::cerr << "/JOIN Error: need at list one channel to join or leave\n";
+				std::cerr << "/JOIN Error: need at least one channel to join\n";
 				return ;
 			}
 			if (words.size() > 2)

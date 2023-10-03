@@ -125,12 +125,23 @@ void Server::launch()
 
 void Server::quitServer(std::pair<Command, std::string>cmd, int i)
 {
-	(void)cmd; // Needs to send a message
+	(void)cmd; //TODO: Needs to send a message
 	std::list<User *>::iterator usrIt = StaticFunctions::findByFd(_users, _socket[i]);
 	for(std::size_t nbChan = 0; nbChan < (*usrIt)->getNbChannel(); nbChan++)
 	{
 		std::size_t id = (*usrIt)->getChanId(nbChan);
 		std::list<Channel *>::iterator chan = StaticFunctions::findChannelById(_channels, id);
+		std::list<User *> userChan = (*chan)->getUsers();
+		std::list<User *>::iterator itUserChan = userChan.begin();
+		for (; itUserChan != userChan.end(); itUserChan++)
+		{
+			if (_socket[i] != (*itUserChan)->getFd())
+			{
+				std::string message = ":" + (*usrIt)->getNickname() + " PRIVMSG " + (*chan)->getName() + " is exiting the network with the message : \"" + cmd.second + "\"\r\n";
+				std::cout << message << std::endl;
+				send((*itUserChan)->getFd(), message.c_str(), message.size(), 0);
+			}
+		}
 		(*chan)->leaveUser(*usrIt);
 	}
 	_users.erase(usrIt);
@@ -180,6 +191,7 @@ void Server::joinChannel(std::pair<Command, std::string>cmd, int i)
 		Channel *c = new Channel(_channelNumber, cmd.second, *usrIt);
 		_channelNumber++;
 		_channels.push_back(c);
+		(*usrIt)->addFlag(c->getId(), 'o');
 		it--;
 	}
 	std::string message = ":" + (*usrIt)->getNickname() + " JOIN " + (*it)->getName() + "\r\n";
@@ -376,9 +388,8 @@ void	Server::messageChannel(int i, std::pair<Command, std::string> cmd, User *op
 
 void Server::setTopic(std::pair<Command, std::string>cmd, int i)
 {
-	//TODO: faire un check si le user est op du channel
 	std::vector<std::string> v = Parser::SplitCmd(cmd.second, " ");
-		std::list<User *>::iterator op = StaticFunctions::findByFd(_users, _socket[i]);
+	std::list<User *>::iterator currentUser = StaticFunctions::findByFd(_users, _socket[i]);
 	Channel * myChan = getChannel(v[0]);
 	if (myChan == NULL)
 		return ;
@@ -386,24 +397,22 @@ void Server::setTopic(std::pair<Command, std::string>cmd, int i)
 	std::list<User *>::iterator it = usr.begin();
 	if (myChan->getName() == cmd.second)
 	{
-		if (_socket[i] == (*it)->getFd())
+		if (myChan->getTopic().empty())
+			return ;
+		else
 		{
-			if (myChan->getTopic().empty())
-				return ;
-			else
-			{
-				std::string message = ":irc.example.com 332 " + (*it)->getNickname() + " " + cmd.second + " " + myChan->getTopic() + "\r\n";
-				send((*it)->getFd(), message.c_str(), message.size(), 0);
-			}
+			std::string message = ":irc.example.com 332 " + (*it)->getNickname() + " " + cmd.second + " " + myChan->getTopic() + "\r\n";
+			send(_socket[i], message.c_str(), message.size(), 0);
 		}
 		return ;
 	}
+	if (myChan->isUserOp(*currentUser) == false)
+		return ;// mettre un message comme quoi il a pas les permissions 
+	myChan->setTopic(v[1]);
 	for (; it != usr.end(); ++it)
 	{
-		std::string message = ":" + (*op)->getNickname() + " TOPIC " + cmd.second + "\r\n";
-		std::vector<std::string> w = Parser::SplitCmd(cmd.second, ":");
-		myChan->setTopic(v[1]);
-		send((*it)->getFd(), message.c_str(), message.size(), 0);
+			std::string message = ":" + (*currentUser)->getNickname() + " TOPIC " + cmd.second + "\r\n";
+			send((*it)->getFd(), message.c_str(), message.size(), 0);
 	}
 }
 

@@ -40,7 +40,6 @@ class Server {
 		void quitServer(std::pair<Command, std::string>cmd, int i);
 
 		void setTopic(std::pair<Command, std::string>cmd, int i);
-		
 		void setNickname(int i, std::pair<Command, std::string>cmd);
 		void setUsername(int i, std::pair<Command, std::string>cmd);
 
