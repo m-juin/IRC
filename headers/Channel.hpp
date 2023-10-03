@@ -2,6 +2,8 @@
 #include <iostream>
 #include <algorithm>
 #include <unistd.h>
+#include "Define.hpp"
+
 
 #ifndef CHANNEL_HPP
 # define CHANNEL_HPP

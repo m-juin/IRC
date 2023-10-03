@@ -342,7 +342,7 @@ bool	Server::isUserCorrectlyConnected(int i)
 	std::list<User *>::iterator usrIt = StaticFunctions::findByFd(_users, _socket[i]);
 	if (usrIt == _users.end())
 	{
-		StaticFunctions::SendToFd(_socket[i], "You are not authenticated", "", 0);
+		StaticFunctions::SendToFd(_socket[i], ERR_NOTREGISTERED, "", 0);
 		return	false;
 	}
 	if ((*usrIt)->getUsername().size() == 0)
@@ -363,7 +363,7 @@ bool	Server::isUserAuthenticated(int i)
 	std::list<User *>::iterator usrIt = StaticFunctions::findByFd(_users, _socket[i]);
 	if (usrIt == _users.end())
 	{
-		StaticFunctions::SendToFd(_socket[i], "You are not authenticated", "", 0);
+		StaticFunctions::SendToFd(_socket[i], ERR_NOTREGISTERED, "", 0);
 		return	false;
 	}
 	return	true;
@@ -376,7 +376,7 @@ void	Server::setNickname(int i, std::pair<Command, std::string>cmd)
 	std::list<User *>::iterator it = StaticFunctions::findByFd(_users, _socket[i]);
 	if (cmd.second.size() == 0)
 	{
-		StaticFunctions::SendToFd(_socket[i], "Your nickname can't be empty", "", 0);
+		StaticFunctions::SendToFd(_socket[i], ERR_NONICKNAMEGIVEN, "", 0);
 		return;
 	}
 	if ((*it)->getNickname().empty())
@@ -410,7 +410,7 @@ void	Server::setUsername(int i, std::pair<Command, std::string> cmd)
 		return;
 	}
 	(*it)->setUsername(cmd.second);
-	StaticFunctions::SendToFd(_socket[i], ":irc.example.com 001 " + (*it)->getNickname() + " :Welcome to the IRC Network " + cmd.second, "", 0);
+	StaticFunctions::SendToFd(_socket[i], RPL_WELCOME((std::string)">ALL", (*it)->getNickname()), "", 0);
 }
 
 void	Server::messageChannel(int i, std::pair<Command, std::string> cmd, User *op)
@@ -421,7 +421,7 @@ void	Server::messageChannel(int i, std::pair<Command, std::string> cmd, User *op
 		std::list<User *>::iterator it = find(_users.begin(), _users.end(), v[0]);
 		if (it == _users.end())
 		{
-			// TODO: ADD ERROR MESSAGE USER NOT FOUND TO PRIVMSG
+			StaticFunctions::SendToFd(_socket[i], ERR_NOSUCHNICK(v[0]), "", 0);
 			return	;
 		}
 		std::string message = ":" + op->getNickname() + " PRIVMSG " + cmd.second + "\r\n";
@@ -430,7 +430,10 @@ void	Server::messageChannel(int i, std::pair<Command, std::string> cmd, User *op
 	}
 	Channel * myChan = getChannel(v[0]);
 	if (myChan == NULL)
+	{
+		StaticFunctions::SendToFd(_socket[i], ERR_NOSUCHCHANNEL(v[0]), "", 0);
 		return ;
+	}
 	std::list<User *> usr = myChan->getUsers();
 	std::list<User *>::iterator it = usr.begin();
 	for (; it != usr.end(); ++it)
@@ -450,13 +453,19 @@ void Server::setTopic(std::pair<Command, std::string>cmd, int i)
 	std::list<User *>::iterator currentUser = StaticFunctions::findByFd(_users, _socket[i]);
 	Channel * myChan = getChannel(v[0]);
 	if (myChan == NULL)
+	{
+		StaticFunctions::SendToFd(_socket[i], ERR_NOSUCHCHANNEL(v[0]), "", 0);
 		return ;
+	}
 	std::list<User *> usr = myChan->getUsers();
 	std::list<User *>::iterator it = usr.begin();
 	if (myChan->getName() == cmd.second)
 	{
 		if (myChan->getTopic().empty())
+		{
+			StaticFunctions::SendToFd(_socket[i], RPL_NOTOPIC, "", 0);
 			return ;
+		}
 		else
 		{
 			std::string message = ":irc.example.com 332 " + (*it)->getNickname() + " " + cmd.second + " " + myChan->getTopic() + "\r\n";
@@ -466,11 +475,14 @@ void Server::setTopic(std::pair<Command, std::string>cmd, int i)
 	}
 	myChan->changeTopic(*currentUser, cmd.second);
 	if (myChan->isUserOp(*currentUser) == false)
-		return ;// mettre un message comme quoi il a pas les permissions 
+	{
+		StaticFunctions::SendToFd(_socket[i], ERR_CHANOPRIVSNEEDED(myChan->getName()), "", 0);
+		return ;
+	} 
 	for (; it != usr.end(); ++it)
 	{
-			std::string message = ":" + (*currentUser)->getNickname() + " TOPIC " + cmd.second + "\r\n";
-			send((*it)->getFd(), message.c_str(), message.size(), 0);
+		std::string message = ":" + (*currentUser)->getNickname() + " TOPIC " + cmd.second + "\r\n";
+		send((*it)->getFd(), message.c_str(), message.size(), 0);
 	}
 }
 
