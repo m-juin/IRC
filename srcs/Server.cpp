@@ -104,7 +104,7 @@ void Server::launch()
 					}
 
 					case QUIT:{
-						quitServer(Parsedcmd->getArgs()[j], i);
+						quitServer(i);
 						break;
 					}
 					
@@ -157,9 +157,8 @@ void Server::changeModeChannel(std::pair<Command, std::string>cmd, int i)
 }
 
 
-void Server::quitServer(std::pair<Command, std::string>cmd, int i)
+void Server::quitServer(int i)
 {
-	(void)cmd;
 	std::list<User *>::iterator usrIt = StaticFunctions::findByFd(_users, _socket[i]);
 	for(std::size_t nbChan = 0; nbChan < (*usrIt)->getNbChannel(); nbChan++)
 	{
