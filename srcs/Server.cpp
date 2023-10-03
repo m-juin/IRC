@@ -125,7 +125,7 @@ void Server::launch()
 
 void Server::quitServer(std::pair<Command, std::string>cmd, int i)
 {
-	(void)cmd; // Needs to send a message
+	(void)cmd; //TODO: Needs to send a message
 	std::list<User *>::iterator usrIt = StaticFunctions::findByFd(_users, _socket[i]);
 	for(std::size_t nbChan = 0; nbChan < (*usrIt)->getNbChannel(); nbChan++)
 	{
@@ -180,6 +180,7 @@ void Server::joinChannel(std::pair<Command, std::string>cmd, int i)
 		Channel *c = new Channel(_channelNumber, cmd.second, *usrIt);
 		_channelNumber++;
 		_channels.push_back(c);
+		(*usrIt)->addFlag(c->getId(), 'o');
 		it--;
 	}
 	std::string message = ":" + (*usrIt)->getNickname() + " JOIN " + (*it)->getName() + "\r\n";
@@ -385,15 +386,12 @@ void Server::setTopic(std::pair<Command, std::string>cmd, int i)
 	std::list<User *>::iterator it = usr.begin();
 	if (myChan->getName() == cmd.second)
 	{
-		if (_socket[i] == (*it)->getFd())
+		if (myChan->getTopic().empty())
+			return ;
+		else
 		{
-			if (myChan->getTopic().empty())
-				return ;
-			else
-			{
-				std::string message = ":irc.example.com 332 " + (*it)->getNickname() + " " + cmd.second + " " + myChan->getTopic() + "\r\n";
-				send((*it)->getFd(), message.c_str(), message.size(), 0);
-			}
+			std::string message = ":irc.example.com 332 " + (*it)->getNickname() + " " + cmd.second + " " + myChan->getTopic() + "\r\n";
+			send(_socket[i], message.c_str(), message.size(), 0);
 		}
 		return ;
 	}
