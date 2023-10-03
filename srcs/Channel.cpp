@@ -210,19 +210,6 @@ void		Channel::addOperator(User *op, std::string &name)
 	(*its)->addFlag(this->_id, 'o');
 }
 
-void	Channel::suppOperator(User *op, std::string &name)
-{
-	if (isUserOp(op) == false)
-		return	;
-	std::list<User *>::iterator its = find(this->_users.begin(), this->_users.end(), name);
-	if (its == _users.end())
-	{
-		std::cerr << "No users found to op" << std::endl;
-		return	;
-	}
-	(*its)->rmFlag(this->_id, 'o');
-}
-
 void		Channel::rmOperator(User *op, std::string &name)
 {
 	if (isUserOp(op) == false)
@@ -234,7 +221,6 @@ void		Channel::rmOperator(User *op, std::string &name)
 		return	;
 	}
 	op->rmFlag(this->_id, 'o');
-
 }
 
 bool Channel::operator==(Channel const & src)

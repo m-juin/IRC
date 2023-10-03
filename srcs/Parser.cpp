@@ -17,7 +17,12 @@ Command getCmdEnum(std::string arg)
 Parser::Parser(std::list<User *> usrs, int fd, std::string fullCmd)
 {
 	std::vector<std::string> lines;
-	fullCmd = fullCmd.substr(0, fullCmd.size() - 2);
+	if (fullCmd[fullCmd.size() - 1] == '\r')
+		fullCmd = fullCmd.substr(0, fullCmd.size() - 2);
+	else
+		fullCmd = fullCmd.substr(0, fullCmd.size() - 1);
+	if (fullCmd[0] == '/')
+		fullCmd = fullCmd.substr(1, fullCmd.size() - 1);
 	lines = SplitCmd(fullCmd, "\r\n");
 	for (std::vector<std::string>::iterator i = lines.begin(); i != lines.end(); i++)
 	{

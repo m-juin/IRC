@@ -32,12 +32,11 @@ class Channel {
 		void	addFlag(char flag, User *op);
 		void	addUser(User *user);
 		void	addOperator(User *op, std::string &name);
-		void	suppOperator(User *op, std::string &name);
 		
+		void	rmFlag(char flag, User *op);
 		void	kickUser(User *op, std::string &name);
 		void	rmOperator(User *op, std::string &name);
-		void	rmFlag(char flag, User *op);
-		
+
 		void	leaveUser(User *usr);
 		void	changeTopic(User *usr, std::string newTopic);
 		void	changeUserLimit(User *usr, std::size_t limit);
@@ -52,7 +51,7 @@ class Channel {
 		std::size_t		_usersLimit;
 		std::string		_password;
 		std::string		_channelMod;
-		
+
 		std::list<User *>	_users;
 		
 		Channel(void);
