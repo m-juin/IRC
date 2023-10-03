@@ -125,22 +125,12 @@ void Server::launch()
 
 void Server::quitServer(std::pair<Command, std::string>cmd, int i)
 {
+	(void)cmd;
 	std::list<User *>::iterator usrIt = StaticFunctions::findByFd(_users, _socket[i]);
 	for(std::size_t nbChan = 0; nbChan < (*usrIt)->getNbChannel(); nbChan++)
 	{
 		std::size_t id = (*usrIt)->getChanId(nbChan);
 		std::list<Channel *>::iterator chan = StaticFunctions::findChannelById(_channels, id);
-		std::list<User *> userChan = (*chan)->getUsers();
-		std::list<User *>::iterator itUserChan = userChan.begin();
-		for (; itUserChan != userChan.end(); itUserChan++)
-		{
-			if (_socket[i] != (*itUserChan)->getFd())
-			{
-				std::string message = ":" + (*usrIt)->getNickname() + " PRIVMSG " + (*chan)->getName() + " is exiting the network with the message : \"" + cmd.second + "\"\r\n";
-				std::cout << message << std::endl;
-				send((*itUserChan)->getFd(), message.c_str(), message.size(), 0);
-			}
-		}
 		(*chan)->leaveUser(*usrIt);
 	}
 	_users.erase(usrIt);
@@ -152,7 +142,8 @@ void Server::checkPass(std::pair<Command, std::string>cmd, int i)
 {	
 	if (isUserAuthenticated(i) == true)
 	{	
-		StaticFunctions::SendToFd(_socket[i], "You're already authenticated", "", 0);
+		std::string message = "You may not reregister\r\n";
+		send(_socket[i], message.c_str(), message.size(), 0);
 		return	;
 	}
 	if (cmd.second == _password)
@@ -369,6 +360,18 @@ void	Server::setUsername(int i, std::pair<Command, std::string> cmd)
 void	Server::messageChannel(int i, std::pair<Command, std::string> cmd, User *op)
 {
 	std::vector<std::string> v = Parser::SplitCmd(cmd.second, " ");
+	if (v[0][0] != '#')
+	{
+		std::list<User *>::iterator it = find(_users.begin(), _users.end(), v[0]);
+		if (it == _users.end())
+		{
+			// TODO: ADD ERROR MESSAGE USER NOT FOUND TO PRIVMSG
+			return	;
+		}
+		std::string message = ":" + op->getNickname() + " PRIVMSG " + cmd.second + "\r\n";
+		send((*it)->getFd(), message.c_str(), message.size(), 0);
+		return	;
+	}
 	Channel * myChan = getChannel(v[0]);
 	if (myChan == NULL)
 		return ;
@@ -379,6 +382,7 @@ void	Server::messageChannel(int i, std::pair<Command, std::string> cmd, User *op
 		if (_socket[i] != (*it)->getFd())
 		{
 			std::string message = ":" + op->getNickname() + " PRIVMSG " + cmd.second + "\r\n";
+			//std::cout << message << std::endl;
 			send((*it)->getFd(), message.c_str(), message.size(), 0);
 		}
 	}
