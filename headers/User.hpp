@@ -29,7 +29,7 @@ class User {
 		void 	setNickname(std::string value);
 		void	setFd(int value);
 
-		bool	addFlag(std::size_t channelID, char flag);
+		bool	addFlag(std::size_t channelID, char flag);//TODO: change flag for take letter and operator + or -
 		bool	rmFlag(std::size_t channelID, char flag);
 
 		void	connectChannel(std::size_t channelID);
