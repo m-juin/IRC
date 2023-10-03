@@ -28,6 +28,7 @@ class Channel {
 		void	setPassword(std::string &password);		
 		void	setTopic(std::string &topic);		
 
+		void	updateFlag(const std::string flag, User *op);
 		void	addFlag(char flag, User *op);
 		void	addUser(User *user);
 		void	addOperator(User *op, std::string &name);

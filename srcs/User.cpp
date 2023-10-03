@@ -99,7 +99,7 @@ flagsPair::iterator User::getFlagsIndex(std::size_t channelID)
 	return ite;
 }
 
-bool	isValidFlag(const char c)
+static bool	isValidFlag(const char c)
 {
 	const std::string validFlag = "o";
 	if (validFlag.find(c) != validFlag.npos)

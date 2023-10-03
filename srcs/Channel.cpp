@@ -102,6 +102,35 @@ bool	Channel::isUserOp(User *op)
 	return	true;
 }
 
+static bool	isValidFlag(const char c)
+{
+	const std::string validFlag = "pitlk";
+	if (validFlag.find(c) != validFlag.npos)
+		return true;
+	return false;
+}
+
+void	Channel::updateFlag(const std::string flag, User *op)
+{
+	if (flag.size() < 2 || flag.size() > 2)
+	{
+		std::cerr << "Invalid flag: " << flag << std::endl;
+		return ;
+	}
+	if (isValidFlag(flag[1]) == false)
+	{
+		std::cerr << "User flag error: Invalid flag: \'" << flag[1] << "\'" << std::endl;
+		return ;
+	}
+	if (flag[0] == '+')
+		addFlag(flag[1], op);
+	else if (flag[0] == '-')
+		rmFlag(flag[1], op);
+	else
+		std::cerr << "User flag error: Invalid flag sign: \'" << flag[0] << "\'" << std::endl;
+
+}
+
 void	Channel::rmFlag(char flag, User *op)
 {
 	if (isUserOp(op) == false)
