@@ -203,8 +203,7 @@ void Server::checkPass(std::pair<Command, std::string>cmd, int i)
 {	
 	if (isUserAuthenticated(i) == true)
 	{	
-		std::string message = "You may not reregister\r\n";
-		send(_socket[i], message.c_str(), message.size(), 0);
+		StaticFunctions::SendToFd(_socket[i], ERR_ALREADYREGISTERED, "", 0);
 		return	;
 	}
 	if (cmd.second == _password)
@@ -222,7 +221,7 @@ void Server::checkPass(std::pair<Command, std::string>cmd, int i)
 		_users.push_back(new User(id, "", "",_socket[i]));
 	}
 	else
-		StaticFunctions::SendToFd(_socket[i], ":Password incorrect", "", 0);
+		StaticFunctions::SendToFd(_socket[i], ERR_PASSWDMISMATCH, "", 0);
 }
 
 

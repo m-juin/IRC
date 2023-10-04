@@ -57,6 +57,7 @@ class Channel {
 		std::string		_channelMod;
 
 		std::list<User *>	_users;
+		std::list<User *>	_invitedUsers;
 		
 		Channel(void);
 };

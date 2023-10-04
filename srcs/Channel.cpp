@@ -192,7 +192,7 @@ void		Channel::kickUser(User *op, std::string &name)
 	std::list<User *>::iterator its = find(this->_users.begin(), this->_users.end(), name);
 	if (op->getFlags(this->_id).find('o') == std::string::npos)
 	{
-		std::cerr << "Insufficient permissions to kick" << std::endl;
+		StaticFunctions::SendToFd(op->getFd(), ERR_CHANOPRIVSNEEDED(this->getName()), "", 0);
 		return	;
 	}
 	(*its)->disconnectChannel(this);
@@ -201,6 +201,11 @@ void		Channel::kickUser(User *op, std::string &name)
 void		Channel::leaveUser(User *usr)
 {
 	std::list<User *>::iterator its = find(this->_users.begin(), this->_users.end(), usr);
+	if (its == this->_users.end())
+	{
+		StaticFunctions::SendToFd(usr->getFd(), ERR_NOTONCHANNEL(this->getName()), "", 0);
+		return	;
+	}
 	this->_users.erase(its);
 }
 
@@ -211,7 +216,7 @@ void		Channel::addOperator(User *op, std::string &name)
 	std::list<User *>::iterator its = find(this->_users.begin(), this->_users.end(), name);
 	if (its == _users.end())
 	{
-		std::cerr << "No users found to op" << std::endl;
+		StaticFunctions::SendToFd(op->getFd(), ERR_NOTONCHANNEL(this->getName()), "", 0);
 		return	;
 	}
 	(*its)->addFlag(this->_id, 'o');
@@ -224,7 +229,7 @@ void		Channel::rmOperator(User *op, std::string &name)
 	std::list<User *>::iterator its = find(this->_users.begin(), this->_users.end(), name);
 	if (its == _users.end())
 	{
-		std::cerr << "No users found to unop" << std::endl;
+		StaticFunctions::SendToFd(op->getFd(), ERR_NOTONCHANNEL(this->getName()), "", 0);
 		return	;
 	}
 	op->rmFlag(this->_id, 'o');
