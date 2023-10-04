@@ -412,7 +412,7 @@ void	Server::setUsername(std::pair<Command, std::string>cmd, int i)
 	std::list<User *>::iterator it = StaticFunctions::findByFd(_users, _socket[i]);
 	if ((*it)->getUsername().size() != 0)
 	{
-		StaticFunctions::SendToFd(_socket[i], "Your username is already set", "", 0);
+		StaticFunctions::SendToFd(_socket[i], "ERR_ALREADYREGISTERED()", "", 0);
 		return;
 	}
 	if ((*it)->getNickname().size() == 0)
@@ -422,7 +422,7 @@ void	Server::setUsername(std::pair<Command, std::string>cmd, int i)
 	}
 	if (cmd.second.size() == 0)
 	{
-		StaticFunctions::SendToFd(_socket[i], "Your username can't be empty", "", 0);
+		StaticFunctions::SendToFd(_socket[i], "ERR_NEEDMOREPARAMS(\"USER\")", "", 0);
 		return;
 	}
 	(*it)->setUsername(cmd.second);
