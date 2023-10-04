@@ -140,7 +140,7 @@ void Server::changeModeChannel(std::pair<Command, std::string>cmd, int i)
 		return ;
 	}
 
-	// Peut-être utiliser updateFlag
+	// Peut-être utiliser updateFlag de Channel
 	if (v.size() < 2)
 	{
 		StaticFunctions::SendToFd(_socket[i], ERR_NEEDMOREPARAMS(v[0]), "", 0);
@@ -379,6 +379,17 @@ void	Server::setNickname(int i, std::pair<Command, std::string>cmd)
 	if (isUserAuthenticated(i) == false)
 		return	;
 	std::list<User *>::iterator it = StaticFunctions::findByFd(_users, _socket[i]);
+	if (cmd.second.find_first_of(" \n\t\r\v\f#&:") != std::string::npos)
+	{
+		StaticFunctions::SendToFd(_socket[i], "ERR_ERRONEUSNICKNAME(cmd.second)", "", 0);
+		return	;
+	}
+	std::list<User *>::iterator usrIt = find(_users.begin(), _users.end(), cmd.second);
+	if (usrIt != _users.end())
+	{
+		StaticFunctions::SendToFd(_socket[i], ERR_NICKNAMEINUSE(cmd.second), "", 0);
+		return	;
+	}
 	if (cmd.second.size() == 0)
 	{
 		StaticFunctions::SendToFd(_socket[i], ERR_NONICKNAMEGIVEN, "", 0);
@@ -446,7 +457,6 @@ void	Server::messageChannel(int i, std::pair<Command, std::string> cmd, User *op
 		if (_socket[i] != (*it)->getFd())
 		{
 			std::string message = ":" + op->getNickname() + " PRIVMSG " + cmd.second + "\r\n";
-			//std::cout << message << std::endl;
 			send((*it)->getFd(), message.c_str(), message.size(), 0);
 		}
 	}
