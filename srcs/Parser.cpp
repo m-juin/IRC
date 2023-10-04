@@ -105,7 +105,6 @@ Parser::~Parser()
 }
 
 
-
 std::vector<std::pair<Command, std::string> > Parser::getArgs()
 {
 	return _args;
