@@ -33,11 +33,11 @@ class Channel {
 		void	setTopic(std::string &topic);	
 
 		void	updateFlag(const std::string flag, User *op);
-		void	addFlag(char flag, User *op);
+		void	addFlag(char flag);
 		void	addUser(User *user);
 		void	addOperator(User *op, std::string &name);
 		
-		void	rmFlag(char flag, User *op);
+		void	rmFlag(char flag);
 		void	kickUser(User *op, std::string &name);
 		void	rmOperator(User *op, std::string &name);
 

@@ -114,6 +114,7 @@ void Server::launch()
 						changeModeChannel(Parsedcmd->getArgs()[j], i);
 						break;
 					}
+
 					case PRIVMSG:
 					{
 						messageChannel(i, Parsedcmd->getArgs()[j], Parsedcmd->getOperator());
@@ -138,6 +139,8 @@ void Server::changeModeChannel(std::pair<Command, std::string>cmd, int i)
 		StaticFunctions::SendToFd(_socket[i], ERR_NOSUCHCHANNEL(v[0]), "", 0);
 		return ;
 	}
+
+	// Peut-être utiliser updateFlag
 	if (v.size() < 2)
 	{
 		StaticFunctions::SendToFd(_socket[i], ERR_NEEDMOREPARAMS(v[0]), "", 0);
@@ -159,9 +162,9 @@ void Server::changeModeChannel(std::pair<Command, std::string>cmd, int i)
 		return ;
 	}
 	if (v[1][0] == '+')
-		(*it)->addFlag(v[1][1], *usrIt);
+		(*it)->addFlag(v[1][1]);
 	else if (v[1][0] == '-')
-		(*it)->rmFlag(v[1][1], *usrIt);
+		(*it)->rmFlag(v[1][1]);
 	if (v[1][0] == '+' && v[1][1] == 'o' && !v[3].empty())
 	{
 		(*it)->addOperator(*usrIt, v[3]);

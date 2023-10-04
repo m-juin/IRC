@@ -131,34 +131,32 @@ void	Channel::updateFlag(const std::string flag, User *op)
 		std::cerr << "User flag error: Invalid flag: \'" << flag[1] << "\'" << std::endl;
 		return ;
 	}
+	if (isUserOp(op) == false)
+		return	;
 	if (flag[0] == '+')
-		addFlag(flag[1], op);
+		addFlag(flag[1]);
 	else if (flag[0] == '-')
-		rmFlag(flag[1], op);
+		rmFlag(flag[1]);
 	else
 		std::cerr << "User flag error: Invalid flag sign: \'" << flag[0] << "\'" << std::endl;
 
 }
 
-void	Channel::rmFlag(char flag, User *op)
+void	Channel::rmFlag(char flag)
 {
-	if (isUserOp(op) == false)
-		return	;
 	std::size_t idx = this->_channelMod.find(flag);
 	if (idx != std::string::npos)
 		this->_channelMod.erase(idx, 1);
 	else
-		std::cerr << "Permissions not set to this channel" << std::endl;
+		std::cerr << "Flag not set to this channel" << std::endl;
 }
 
-void	Channel::addFlag(char flag, User *op)
+void	Channel::addFlag(char flag)
 {
-	if (isUserOp(op) == false)
-		return	;
 	if (this->_channelMod.find(flag) == std::string::npos)
 		this->_channelMod += flag;
 	else
-		std::cerr << "Permissions already set to this channel" << std::endl;
+		std::cerr << "Flag already set to this channel" << std::endl;
 }
 
 void	Channel::changeUserLimit(User *op, std::size_t limit)
