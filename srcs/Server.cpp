@@ -208,7 +208,7 @@ void Server::checkPass(std::pair<Command, std::string>cmd, int i)
 	}
 	if (cmd.second == _password)
 	{
-		StaticFunctions::SendToFd(_socket[i], "Password OK\r\n", "Now authenticate you with /NICK /USER", 0);
+		//StaticFunctions::SendToFd(_socket[i], "Password OK\r\n", "Now authenticate you with /NICK /USER", 0);
 		std::list<User *>::iterator it = _users.end();
 		int id;
 		if (_users.end() != _users.begin())
@@ -401,7 +401,7 @@ void	Server::setNickname(std::pair<Command, std::string>cmd, int i)
 		StaticFunctions::SendToFd(_socket[i], "NICK ", (*it)->getNickname(), 0);
 		return ;
 	}
-	StaticFunctions::SendToFd(_socket[i], (*it)->getNickname() + " nick change by ", cmd.second, 0);
+	StaticFunctions::SendToFd(_socket[i], ":" + (*it)->getNickname() + " NICK ", cmd.second, 0);
 	(*it)->setNickname(cmd.second);
 }
 
