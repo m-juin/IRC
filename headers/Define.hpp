@@ -3,11 +3,10 @@
 #ifndef DEFINE_HPP
 #define DEFINE_HPP
 
-#define USERLEN 12
 
 #define RPL_WELCOME(networkname, nick) ("Welcome to the " + networkname + " Network " + nick)
 #define RPL_NOTOPIC "No topic is set"
-
+#define RPL_INVITING(nick, channel) (nick + channel)
 
 #define ERR_NOSUCHNICK(nick) (nick + " :No such nick/channel")
 #define ERR_NOSUCHSERVER(serv) (serv + " :No such server")
@@ -34,5 +33,6 @@
 #define ERR_UMODEUNKNOWNFLAG "Unknown MODE flag"
 #define ERR_USERSDONTMATCH "Cant change mode for other users"
 #define ERR_INVALIDKEY(channel) (channel + " :Key is not well-formed")
+#define ERR_ERRONEUSNICKNAME(nick) (nick + " :Erroneus nickname")
 
 #endif

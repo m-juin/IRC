@@ -190,11 +190,18 @@ void	Channel::changeTopic(User *usr, std::string newTopic)
 void		Channel::kickUser(User *op, std::string &name)
 {
 	std::list<User *>::iterator its = find(this->_users.begin(), this->_users.end(), name);
+	if (its == _users.end())
+	{
+		StaticFunctions::SendToFd(op->getFd(), ERR_USERNOTINCHANNEL(name, this->getName()), "", 0);
+		return	;
+	}
 	if (op->getFlags(this->_id).find('o') == std::string::npos)
 	{
 		StaticFunctions::SendToFd(op->getFd(), ERR_CHANOPRIVSNEEDED(this->getName()), "", 0);
 		return	;
 	}
+	std::string message = ":" + op->getNickname() + " KICK " + getName() + " " + name;
+	StaticFunctions::SendToFd((*its)->getFd(), message, "", 0);
 	(*its)->disconnectChannel(this);
 }
 

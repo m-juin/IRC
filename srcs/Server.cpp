@@ -109,6 +109,11 @@ void Server::launch()
 						quitServer(Parsedcmd->getArgs()[j], i);
 						break;
 					}
+
+					case KICK:{
+						kickUser(Parsedcmd->getArgs()[j], i);
+						break;
+					}
 					
 					case MODE: {
 						changeModeChannel(Parsedcmd->getArgs()[j], i);
@@ -174,6 +179,21 @@ void Server::changeModeChannel(std::pair<Command, std::string>cmd, int i)
 		(*it)->rmOperator(*usrIt, v[3]);
 }
 
+void Server::kickUser(std::pair<Command, std::string>cmd, int i)
+{
+	std::list<User *>::iterator usrIt = StaticFunctions::findByFd(_users, _socket[i]);
+	std::vector<std::string> v = Parser::SplitCmd(cmd.second, " ");
+	std::list<Channel*>::iterator chan = find(_channels.begin(), _channels.end(), v[0]);
+	if (v[1].size() == 0)
+	{
+		std::cout << "ça marche pas" << std::endl;
+		return	;
+	}
+	std::string message = ":" + (*usrIt)->getNickname() + " KICK " + (*chan)->getName() + " " + v[1] + "\r\n";
+	StaticFunctions::SendToFd(_socket[i], message, "", 0);
+	(*chan)->kickUser(*usrIt, v[1]);
+	
+}
 
 void Server::quitServer(std::pair<Command, std::string>cmd, int i)
 {
@@ -244,8 +264,8 @@ void Server::joinChannel(std::pair<Command, std::string>cmd, int i)
 		(*usrIt)->addFlag(c->getId(), 'o');
 		it--;
 	}
-	std::string message = ":" + (*usrIt)->getNickname() + " JOIN " + (*it)->getName() + "\r\n";
-	send(_socket[i], message.c_str(), message.size(), 0);
+	//std::string message = ":" + (*usrIt)->getNickname() + " JOIN " + (*it)->getName() + "\r\n";
+	//StaticFunctions::SendToFd(_socket[i], message, "", 0);
 }
 
 void Server::leaveChannel(std::pair<Command, std::string>cmd, int i)
@@ -381,7 +401,7 @@ void	Server::setNickname(std::pair<Command, std::string>cmd, int i)
 	std::list<User *>::iterator it = StaticFunctions::findByFd(_users, _socket[i]);
 	if (cmd.second.find_first_of(" \n\t\r\v\f#&:") != std::string::npos)
 	{
-		StaticFunctions::SendToFd(_socket[i], "ERR_ERRONEUSNICKNAME(cmd.second)", "", 0);
+		StaticFunctions::SendToFd(_socket[i], ERR_ERRONEUSNICKNAME(cmd.second), "", 0);
 		return	;
 	}
 	std::list<User *>::iterator usrIt = find(_users.begin(), _users.end(), cmd.second);
@@ -412,7 +432,7 @@ void	Server::setUsername(std::pair<Command, std::string>cmd, int i)
 	std::list<User *>::iterator it = StaticFunctions::findByFd(_users, _socket[i]);
 	if ((*it)->getUsername().size() != 0)
 	{
-		StaticFunctions::SendToFd(_socket[i], "ERR_ALREADYREGISTERED()", "", 0);
+		StaticFunctions::SendToFd(_socket[i], ERR_ALREADYREGISTERED, "", 0);
 		return;
 	}
 	if ((*it)->getNickname().size() == 0)
@@ -422,7 +442,7 @@ void	Server::setUsername(std::pair<Command, std::string>cmd, int i)
 	}
 	if (cmd.second.size() == 0)
 	{
-		StaticFunctions::SendToFd(_socket[i], "ERR_NEEDMOREPARAMS(\"USER\")", "", 0);
+		StaticFunctions::SendToFd(_socket[i], ERR_NEEDMOREPARAMS(static_cast<std::string>("USER")), "", 0);
 		return;
 	}
 	(*it)->setUsername(cmd.second);
