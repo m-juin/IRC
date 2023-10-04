@@ -86,17 +86,17 @@ void Server::launch()
 					}
 
 					case NICK:{
-						setNickname(i, Parsedcmd->getArgs()[j]);
+						setNickname(Parsedcmd->getArgs()[j], i);
 						break;
 					}
 
 					case USER:{
-						setUsername(i, Parsedcmd->getArgs()[j]);
+						setUsername(Parsedcmd->getArgs()[j], i);
 						break;
 					}
 
 					case PART:{
-						leaveChannel(i, Parsedcmd->getArgs()[j]);
+						leaveChannel(Parsedcmd->getArgs()[j], i);
 						break;
 					}
 
@@ -117,7 +117,7 @@ void Server::launch()
 
 					case PRIVMSG:
 					{
-						messageChannel(i, Parsedcmd->getArgs()[j], Parsedcmd->getOperator());
+						messageChannel(Parsedcmd->getArgs()[j], i ,Parsedcmd->getOperator());
 						break;
 					}
 
@@ -208,7 +208,7 @@ void Server::checkPass(std::pair<Command, std::string>cmd, int i)
 	}
 	if (cmd.second == _password)
 	{
-		StaticFunctions::SendToFd(_socket[i], "Password OK\r\n", "Now authenticate you with /NICK /USER", 0);
+		//StaticFunctions::SendToFd(_socket[i], "Password OK\r\n", "Now authenticate you with /NICK /USER", 0);
 		std::list<User *>::iterator it = _users.end();
 		int id;
 		if (_users.end() != _users.begin())
@@ -246,7 +246,7 @@ void Server::joinChannel(std::pair<Command, std::string>cmd, int i)
 	}
 }
 
-void Server::leaveChannel(int i, std::pair<Command, std::string> cmd)
+void Server::leaveChannel(std::pair<Command, std::string>cmd, int i)
 {
 	std::vector<std::string> v = Parser::SplitCmd(cmd.second, " ");
 	std::list<User *>::iterator usrIt = StaticFunctions::findByFd(_users, _socket[i]);
@@ -372,7 +372,7 @@ bool	Server::isUserAuthenticated(int i)
 	return	true;
 }
 
-void	Server::setNickname(int i, std::pair<Command, std::string>cmd)
+void	Server::setNickname(std::pair<Command, std::string>cmd, int i)
 {
 	if (isUserAuthenticated(i) == false)
 		return	;
@@ -399,18 +399,18 @@ void	Server::setNickname(int i, std::pair<Command, std::string>cmd)
 		StaticFunctions::SendToFd(_socket[i], "NICK ", (*it)->getNickname(), 0);
 		return ;
 	}
-	StaticFunctions::SendToFd(_socket[i], (*it)->getNickname() + " nick change by ", cmd.second, 0);
+	StaticFunctions::SendToFd(_socket[i], ":" + (*it)->getNickname() + " NICK ", cmd.second, 0);
 	(*it)->setNickname(cmd.second);
 }
 
-void	Server::setUsername(int i, std::pair<Command, std::string> cmd)
+void	Server::setUsername(std::pair<Command, std::string>cmd, int i)
 {
 	if (isUserAuthenticated(i) == false)
 		return;
 	std::list<User *>::iterator it = StaticFunctions::findByFd(_users, _socket[i]);
 	if ((*it)->getUsername().size() != 0)
 	{
-		StaticFunctions::SendToFd(_socket[i], "Your username is already set", "", 0);
+		StaticFunctions::SendToFd(_socket[i], "ERR_ALREADYREGISTERED()", "", 0);
 		return;
 	}
 	if ((*it)->getNickname().size() == 0)
@@ -420,14 +420,14 @@ void	Server::setUsername(int i, std::pair<Command, std::string> cmd)
 	}
 	if (cmd.second.size() == 0)
 	{
-		StaticFunctions::SendToFd(_socket[i], "Your username can't be empty", "", 0);
+		StaticFunctions::SendToFd(_socket[i], "ERR_NEEDMOREPARAMS(\"USER\")", "", 0);
 		return;
 	}
 	(*it)->setUsername(cmd.second);
 	StaticFunctions::SendToFd(_socket[i], RPL_WELCOME((std::string)">ALL", (*it)->getNickname()), "", 0);
 }
 
-void	Server::messageChannel(int i, std::pair<Command, std::string> cmd, User *op)
+void	Server::messageChannel(std::pair<Command, std::string>cmd, int i, User *op)
 {
 	std::vector<std::string> v = Parser::SplitCmd(cmd.second, " ");
 	if (v[0][0] != '#')

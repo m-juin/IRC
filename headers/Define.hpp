@@ -3,6 +3,8 @@
 #ifndef DEFINE_HPP
 #define DEFINE_HPP
 
+#define USERLEN 12
+
 #define RPL_WELCOME(networkname, nick) ("Welcome to the " + networkname + " Network " + nick)
 #define RPL_NOTOPIC "No topic is set"
 
