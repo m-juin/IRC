@@ -43,7 +43,7 @@ class Channel {
 
 		void	leaveUser(User *usr);
 		void	changeTopic(User *usr, std::string newTopic);
-		void	changeUserLimit(User *usr, std::size_t limit);
+		void	changeUserLimit(User *op, std::size_t limit);
 
 		bool	isUserOp(User *op);
 		

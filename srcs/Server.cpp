@@ -86,17 +86,17 @@ void Server::launch()
 					}
 
 					case NICK:{
-						setNickname(i, Parsedcmd->getArgs()[j]);
+						setNickname(Parsedcmd->getArgs()[j], i);
 						break;
 					}
 
 					case USER:{
-						setUsername(i, Parsedcmd->getArgs()[j]);
+						setUsername(Parsedcmd->getArgs()[j], i);
 						break;
 					}
 
 					case PART:{
-						leaveChannel(i, Parsedcmd->getArgs()[j]);
+						leaveChannel(Parsedcmd->getArgs()[j], i);
 						break;
 					}
 
@@ -117,7 +117,7 @@ void Server::launch()
 
 					case PRIVMSG:
 					{
-						messageChannel(i, Parsedcmd->getArgs()[j], Parsedcmd->getOperator());
+						messageChannel(Parsedcmd->getArgs()[j], i ,Parsedcmd->getOperator());
 						break;
 					}
 
@@ -249,7 +249,7 @@ void Server::joinChannel(std::pair<Command, std::string>cmd, int i)
 	send(_socket[i], message.c_str(), message.size(), 0);
 }
 
-void Server::leaveChannel(int i, std::pair<Command, std::string> cmd)
+void Server::leaveChannel(std::pair<Command, std::string>cmd, int i)
 {
 	std::vector<std::string> v = Parser::SplitCmd(cmd.second, " ");
 	std::list<User *>::iterator usrIt = StaticFunctions::findByFd(_users, _socket[i]);
@@ -375,7 +375,7 @@ bool	Server::isUserAuthenticated(int i)
 	return	true;
 }
 
-void	Server::setNickname(int i, std::pair<Command, std::string>cmd)
+void	Server::setNickname(std::pair<Command, std::string>cmd, int i)
 {
 	if (isUserAuthenticated(i) == false)
 		return	;
@@ -406,7 +406,7 @@ void	Server::setNickname(int i, std::pair<Command, std::string>cmd)
 	(*it)->setNickname(cmd.second);
 }
 
-void	Server::setUsername(int i, std::pair<Command, std::string> cmd)
+void	Server::setUsername(std::pair<Command, std::string>cmd, int i)
 {
 	if (isUserAuthenticated(i) == false)
 		return;
@@ -430,7 +430,7 @@ void	Server::setUsername(int i, std::pair<Command, std::string> cmd)
 	StaticFunctions::SendToFd(_socket[i], RPL_WELCOME((std::string)">ALL", (*it)->getNickname()), "", 0);
 }
 
-void	Server::messageChannel(int i, std::pair<Command, std::string> cmd, User *op)
+void	Server::messageChannel(std::pair<Command, std::string>cmd, int i, User *op)
 {
 	std::vector<std::string> v = Parser::SplitCmd(cmd.second, " ");
 	if (v[0][0] != '#')
