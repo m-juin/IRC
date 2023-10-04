@@ -233,7 +233,7 @@ void Server::joinChannel(std::pair<Command, std::string>cmd, int i)
 	std::list<Channel *>::iterator it = find(_channels.begin(), _channels.end(), cmd.second);
 	if (it != _channels.end())
 	{
-		StaticFunctions::SendToFd(_socket[i], "You joined channel ", cmd.second, 0);
+		//StaticFunctions::SendToFd(_socket[i], "You joined channel ", cmd.second, 0);
 		(*it)->addUser(*usrIt);
 	}
 	else if (it == _channels.end())
@@ -244,8 +244,6 @@ void Server::joinChannel(std::pair<Command, std::string>cmd, int i)
 		(*usrIt)->addFlag(c->getId(), 'o');
 		it--;
 	}
-	std::string message = ":" + (*usrIt)->getNickname() + " JOIN " + (*it)->getName() + "\r\n";
-	send(_socket[i], message.c_str(), message.size(), 0);
 }
 
 void Server::leaveChannel(int i, std::pair<Command, std::string> cmd)
