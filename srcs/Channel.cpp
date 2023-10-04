@@ -182,7 +182,7 @@ void	Channel::changeTopic(User *usr, std::string newTopic)
 	{
 		if (usr->getFlags(this->_id).find('o') == std::string::npos)
 		{
-			std::cerr << "Insufficient permissions to manage channel" << std::endl;
+			StaticFunctions::SendToFd(usr->getFd(), ERR_CHANOPRIVSNEEDED(this->getName()), "", 0);
 			return	;
 		}
 	}

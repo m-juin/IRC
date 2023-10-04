@@ -6,7 +6,7 @@
 #include <cstring>
 #include <vector>
 #include "Parser.hpp"
-
+#include "Define.hpp"
 
 #ifndef SERVER_HPP
 # define SERVER_HPP
