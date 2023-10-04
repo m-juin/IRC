@@ -14,6 +14,8 @@ Channel::Channel(std::size_t id, std::string name, User *user)
 	this->_usersLimit = 0;
 	this->_users.push_back(user);
 	user->connectChannel(this->_id);
+	std::string message = ":" + user->getNickname() + " JOIN " + this->getName();
+	StaticFunctions::SendToFd(user->getFd(), message, "" , 0);
 	//user->addFlag(this->_id, 'o');
 }
 
@@ -97,8 +99,30 @@ void		Channel::setTopic(std::string &topic)
 
 void		Channel::addUser(User *user)
 {
-	user->connectChannel(this->_id);
-	this->_users.push_back(user);
+	if (this->_channelMod.find('i') == std::string::npos)
+	{
+		user->connectChannel(this->_id);
+		this->_users.push_back(user);
+		StaticFunctions::SendToFd(user->getFd(), "You joined channel ", this->_name, 0);
+		std::string message = ":" + user->getNickname() + " JOIN " + this->getName();
+		StaticFunctions::SendToFd(user->getFd(), message, "" , 0);
+	}
+	else
+	{
+		std::cout << "TOTO\n";
+		std::list<User *>::iterator it = StaticFunctions::findByFd(_invitedUsers, user->getFd()); 
+		if (it == _invitedUsers.end())
+			StaticFunctions::SendToFd(user->getFd(), ERR_INVITEONLYCHAN(this->getName()), "", 0);
+		else
+		{
+			user->connectChannel(this->_id);
+			this->_users.push_back(user);
+			_invitedUsers.erase(it);
+			StaticFunctions::SendToFd(user->getFd(), "You joined channel ", this->_name, 0);
+			std::string message = ":" + user->getNickname() + " JOIN " + this->getName();
+			StaticFunctions::SendToFd(user->getFd(), message, "" , 0);
+		}
+	}
 }
 
 bool	Channel::isUserOp(User *op)

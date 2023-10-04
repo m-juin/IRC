@@ -189,8 +189,6 @@ void Server::kickUser(std::pair<Command, std::string>cmd, int i)
 		std::cout << "ça marche pas" << std::endl;
 		return	;
 	}
-	std::string message = ":" + (*usrIt)->getNickname() + " KICK " + (*chan)->getName() + " " + v[1] + "\r\n";
-	StaticFunctions::SendToFd(_socket[i], message, "", 0);
 	(*chan)->kickUser(*usrIt, v[1]);
 	
 }
@@ -253,7 +251,7 @@ void Server::joinChannel(std::pair<Command, std::string>cmd, int i)
 	std::list<Channel *>::iterator it = find(_channels.begin(), _channels.end(), cmd.second);
 	if (it != _channels.end())
 	{
-		StaticFunctions::SendToFd(_socket[i], "You joined channel ", cmd.second, 0);
+		//StaticFunctions::SendToFd(_socket[i], "You joined channel ", cmd.second, 0);
 		(*it)->addUser(*usrIt);
 	}
 	else if (it == _channels.end())
@@ -264,8 +262,6 @@ void Server::joinChannel(std::pair<Command, std::string>cmd, int i)
 		(*usrIt)->addFlag(c->getId(), 'o');
 		it--;
 	}
-	//std::string message = ":" + (*usrIt)->getNickname() + " JOIN " + (*it)->getName() + "\r\n";
-	//StaticFunctions::SendToFd(_socket[i], message, "", 0);
 }
 
 void Server::leaveChannel(std::pair<Command, std::string>cmd, int i)
