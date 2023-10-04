@@ -1,11 +1,13 @@
-#include "../headers/Server.hpp"
-#include "../headers/Channel.hpp"
-#include "../headers/User.hpp"
+#include "Server.hpp"
+#include "Channel.hpp"
+#include "User.hpp"
 #include "StaticFunctions.hpp"
+#include "Define.hpp"
+
 #include <sys/select.h>
 #include <string>
 #include <sstream>
-#include "Define.hpp"
+
 
 Server::Server(std::size_t port, std::string password)
 {
