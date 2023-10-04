@@ -373,7 +373,7 @@ bool	Server::isUserCorrectlyConnected(int i)
 	}
 	if ((*usrIt)->getNickname().size() == 0)
 	{
-		StaticFunctions::SendToFd(_socket[i], "You didn't set your nickname", "", 0);
+		StaticFunctions::SendToFd(_socket[i], ERR_NONICKNAMEGIVEN, "", 0);
 		return	false;
 	}
 	return	true;
@@ -414,7 +414,7 @@ void	Server::setNickname(std::pair<Command, std::string>cmd, int i)
 	if ((*it)->getNickname().empty())
 	{
 		(*it)->setNickname(cmd.second);
-		StaticFunctions::SendToFd(_socket[i], "NICK ", (*it)->getNickname(), 0);
+		StaticFunctions::SendToFd(_socket[i], "NICK ", (*it)->getNickname() , 0);
 		return ;
 	}
 	StaticFunctions::SendToFd(_socket[i], ":" + (*it)->getNickname() + " NICK ", cmd.second, 0);
@@ -433,7 +433,7 @@ void	Server::setUsername(std::pair<Command, std::string>cmd, int i)
 	}
 	if ((*it)->getNickname().size() == 0)
 	{
-		StaticFunctions::SendToFd(_socket[i], "Your nickname is not set", "", 0);
+		StaticFunctions::SendToFd(_socket[i], ERR_NONICKNAMEGIVEN, "", 0);
 		return;
 	}
 	if (cmd.second.size() == 0)

@@ -23,7 +23,8 @@ HEAD =	headers/Channel.hpp \
 		headers/Server.hpp \
 		headers/StaticFunctions.hpp \
 		headers/User.hpp \
-		headers/Parser.hpp
+		headers/Parser.hpp \
+		headers/Define.hpp
 
 CFLAGS = -Wall -Wextra -Werror -g -std=c++98 -I./headers/
 
