@@ -112,7 +112,6 @@ void Server::launch()
 						changeModeChannel(Parsedcmd->getArgs()[j], i);
 						break;
 					}
-					//	creer privmsgChannel et privmsg
 					case PRIVMSG:
 					{
 						messageChannel(i, Parsedcmd->getArgs()[j], Parsedcmd->getOperator());
@@ -129,28 +128,27 @@ void Server::launch()
 
 void Server::changeModeChannel(std::pair<Command, std::string>cmd, int i)
 {
-	//TODO: BEAUCOUPPPPPPPPPPP DE MESSAGE
 	std::list<User *>::iterator usrIt = StaticFunctions::findByFd(_users, _socket[i]);
 	std::vector<std::string> v = Parser::SplitCmd(cmd.second, " ");
 	std::list<Channel *>::iterator it = find(_channels.begin(), _channels.end(), v[0]);
 	if (it == _channels.end())
 	{
-		StaticFunctions::SendToFd(_socket[i], ERR_NOSUCHCHANNEL, "", 0);
+		StaticFunctions::SendToFd(_socket[i], ERR_NOSUCHCHANNEL(v[0]), "", 0);
 		return ;
 	}
 	if (v.size() < 2)
 	{
-		StaticFunctions::SendToFd(_socket[i], ERR_NEEDMOREPARAMS, "", 0);
+		StaticFunctions::SendToFd(_socket[i], ERR_NEEDMOREPARAMS(v[0]), "", 0);
 		return ;
 	}
 	if ((*it)->isUserOp(*usrIt) == false)
 	{
-		StaticFunctions::SendToFd(_socket[i], ERR_CHANOPRIVSNEEDED, "", 0);
+		StaticFunctions::SendToFd(_socket[i], ERR_CHANOPRIVSNEEDED(v[0]), "", 0);
 		return ;
 	}
 	if (!v[1].empty() && v[1].size() != 2)
 	{
-		StaticFunctions::SendToFd(_socket[i], ERR_NEEDMOREPARAMS, "", 0);
+		StaticFunctions::SendToFd(_socket[i], ERR_NEEDMOREPARAMS(v[1]), "", 0);
 		return;
 	}
 	if (v[1][1] != 'i' && v[1][1] != 't' && v[1][1] != 'k'  && v[1][1] != 'l' && v[1][1] != 'o')
@@ -168,11 +166,7 @@ void Server::changeModeChannel(std::pair<Command, std::string>cmd, int i)
 		return;
 	}
 	else if (v[1][0] == '-' && v[1][1] == 'o' && !v[3].empty())
-	{
 		(*it)->rmOperator(*usrIt, v[3]);
-		return;
-	}
-	std::cout << "sur " + v[0] + " " + (*it)->getChannelMod() << std::endl;
 }
 
 
