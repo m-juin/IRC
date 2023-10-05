@@ -226,8 +226,6 @@ void Server::joinChannel(std::pair<Command, std::string>cmd, int i)
 	std::list<Channel *>::iterator it = find(_channels.begin(), _channels.end(), v[0]);
 	if (it != _channels.end())
 	{
-		
-		std::cout << "v[1] == " << v[1] << std::endl;
 		if (!(*it)->getPassword().empty() && v[1].empty())
 		{
 			StaticFunctions::SendToFd(_socket[i], (*it)->getName() + " need password", "", 0);
@@ -251,10 +249,7 @@ void Server::joinChannel(std::pair<Command, std::string>cmd, int i)
 		Channel *c = new Channel(_channelNumber, v[0], *usrIt);
 		_channelNumber++;
 		if (!v[1].empty())
-		{
 			c->setPassword(v[1]);
-			std::cout << "set password = " + v[1] << std::endl;
-		}
 		else
 			c->setPassword(empty);
 		_channels.push_back(c);
