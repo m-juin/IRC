@@ -166,17 +166,33 @@ void Server::changeModeChannel(std::pair<Command, std::string>cmd, int i)
 		StaticFunctions::SendToFd(_socket[i], ERR_UMODEUNKNOWNFLAG, "", 0);
 		return ;
 	}
-	if (v[1][0] == '+')
-		(*it)->addFlag(v[1][1]);
-	else if (v[1][0] == '-')
-		(*it)->rmFlag(v[1][1]);
-	if (v[1][0] == '+' && v[1][1] == 'o' && !v[3].empty())
+	(*it)->updateFlag(v[1], *usrIt);
+	//if (v[1][0] == '+')
+	//	(*it)->addFlag(v[1][1]);
+	//else if (v[1][0] == '-')
+	//	(*it)->rmFlag(v[1][1]);
+	std::string flag = (*it)->getChannelMod();
+	if (v[1][0] == '+' && v[1][1] == 'o' && !v[3].empty()) // add operator
 	{
 		(*it)->addOperator(*usrIt, v[3]);
-		return;
+		StaticFunctions::SendToFd(_socket[i], ":" + (*usrIt)->getNickname() + " add operator " + v[3] + " " + (*it)->getName(), "", 0);
 	}
 	else if (v[1][0] == '-' && v[1][1] == 'o' && !v[3].empty())
+	{
 		(*it)->rmOperator(*usrIt, v[3]);
+		StaticFunctions::SendToFd(_socket[i], ":" + (*usrIt)->getNickname() + " delete operator " + v[3] + " " + (*it)->getName(), "", 0);
+	}
+	
+	if (v[1][0] == '+' && v[1][1] == 'l' && !v[3].empty()) // limit user
+	{
+		(*it)->setUserLimit(std::strtof(v[3].c_str(), NULL));
+		StaticFunctions::SendToFd(_socket[i], ":" + (*usrIt)->getNickname() + " add limit " + v[3] + " " + (*it)->getName(), "", 0);
+	}
+	else if (v[1][0] == '-' && v[1][1] == 'l' && !v[3].empty())
+	{
+		(*it)->setUserLimit(0);
+		StaticFunctions::SendToFd(_socket[i], ":" + (*usrIt)->getNickname() + " delete limit " + (*it)->getName(), "", 0);
+	}
 }
 
 void Server::kickUser(std::pair<Command, std::string>cmd, int i)
@@ -252,7 +268,12 @@ void Server::joinChannel(std::pair<Command, std::string>cmd, int i)
 	if (it != _channels.end())
 	{
 		//StaticFunctions::SendToFd(_socket[i], "You joined channel ", cmd.second, 0);
-		(*it)->addUser(*usrIt);
+		if ((*it)->getUserLimit() == 0)
+			(*it)->addUser(*usrIt);
+		else if ((*it)->getUserLimit() != 0 && (*it)->getUsers().size() + 1 < (*it)->getUserLimit())
+			(*it)->addUser(*usrIt);
+		else
+			std::cerr << "impossible la limit est depasse" << std::endl;
 	}
 	else if (it == _channels.end())
 	{
