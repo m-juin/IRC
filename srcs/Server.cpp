@@ -396,7 +396,7 @@ void	Server::setNickname(std::pair<Command, std::string>cmd, int i)
 	std::list<User *>::iterator usrIt = find(_users.begin(), _users.end(), cmd.second);
 	if (usrIt != _users.end())
 	{
-		StaticFunctions::SendToFd(_socket[i], ERR_NICKNAMEINUSE(cmd.second), "", 0);
+		StaticFunctions::SendToFd(_socket[i], ERR_NICKCOLLISION, "", 0);
 		return	;
 	}
 	if (cmd.second.size() == 0)
@@ -435,7 +435,7 @@ void	Server::setUsername(std::pair<Command, std::string>cmd, int i)
 		return;
 	}
 	(*it)->setUsername(cmd.second);
-	//StaticFunctions::SendToFd(_socket[i], RPL_WELCOME((std::string)">ALL", (*it)->getNickname()), "", 0);
+	StaticFunctions::SendToFd(_socket[i], RPL_WELCOME((std::string)">ALL", (*it)->getNickname()), "", 0);
 }
 
 void	Server::messageChannel(std::pair<Command, std::string>cmd, int i, User *op)

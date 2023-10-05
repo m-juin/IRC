@@ -4,7 +4,7 @@
 #define DEFINE_HPP
 
 
-#define RPL_WELCOME(networkname, nick) ("Welcome to the " + networkname + " Network " + nick)
+#define RPL_WELCOME(networkname, nick) (":127.0.0.1 001 " + nick +" Welcome to the " + networkname + " Network " + nick)
 #define RPL_NOTOPIC "No topic is set"
 #define RPL_INVITING(nick, channel) (nick + channel)
 
@@ -34,5 +34,6 @@
 #define ERR_USERSDONTMATCH "Cant change mode for other users"
 #define ERR_INVALIDKEY(channel) (channel + " :Key is not well-formed")
 #define ERR_ERRONEUSNICKNAME(nick) (nick + " :Erroneus nickname")
+#define ERR_NICKCOLLISION "Nickname collision KILL"
 
 #endif
