@@ -224,7 +224,14 @@ void Server::joinChannel(std::pair<Command, std::string>cmd, int i)
 	std::list<Channel *>::iterator it = find(_channels.begin(), _channels.end(), cmd.second);
 	if (it != _channels.end())
 	{
-		(*it)->addUser(*usrIt);
+		//(*it)->addUser(*usrIt);
+		//StaticFunctions::SendToFd(_socket[i], "You joined channel ", cmd.second, 0);
+		if ((*it)->getUserLimit() == 0)
+			(*it)->addUser(*usrIt);
+		else if ((*it)->getUserLimit() != 0 && (*it)->getUsers().size() + 1 < (*it)->getUserLimit())
+			(*it)->addUser(*usrIt);
+		else
+			std::cerr << "impossible la limit est depasse" << std::endl;
 	}
 	else if (it == _channels.end())
 	{
