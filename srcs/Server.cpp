@@ -248,7 +248,7 @@ void Server::joinChannel(std::pair<Command, std::string>cmd, int i)
 		std::string empty = "";
 		Channel *c = new Channel(_channelNumber, v[0], *usrIt);
 		_channelNumber++;
-		if (!v[1].empty())
+		if (v.size() > 1 && !v[1].empty())
 			c->setPassword(v[1]);
 		else
 			c->setPassword(empty);
