@@ -220,10 +220,23 @@ void Server::joinChannel(std::pair<Command, std::string>cmd, int i)
 {
 	if (isUserCorrectlyConnected(i) == false)
 		return ;
+	std::vector<std::string> v = Parser::SplitCmd(cmd.second, " ");
 	std::list<User *>::iterator usrIt = StaticFunctions::findByFd(_users, _socket[i]);
-	std::list<Channel *>::iterator it = find(_channels.begin(), _channels.end(), cmd.second);
+	std::list<Channel *>::iterator it = find(_channels.begin(), _channels.end(), v[0]);
 	if (it != _channels.end())
 	{
+		
+		std::cout << "v[1] == " << v[1] << std::endl;
+		if (!(*it)->getPassword().empty() && v[1].empty())
+		{
+			StaticFunctions::SendToFd(_socket[i], (*it)->getName() + " need password", "", 0);
+			return;
+		}
+		if ((*it)->getPassword() != v[1])
+		{
+			StaticFunctions::SendToFd(_socket[i], "Incorrect password", "", 0);
+			return;
+		}
 		if ((*it)->getUserLimit() == 0)
 			(*it)->addUser(*usrIt);
 		else if ((*it)->getUserLimit() != 0 && (*it)->getUsers().size() + 1 < (*it)->getUserLimit())
@@ -234,9 +247,15 @@ void Server::joinChannel(std::pair<Command, std::string>cmd, int i)
 	else if (it == _channels.end())
 	{
 		std::string empty = "";
-		Channel *c = new Channel(_channelNumber, cmd.second, *usrIt);
+		Channel *c = new Channel(_channelNumber, v[0], *usrIt);
 		_channelNumber++;
-		c->setPassword(empty);
+		if (!v[1].empty())
+		{
+			c->setPassword(v[1]);
+			std::cout << "set password = " + v[1] << std::endl;
+		}
+		else
+			c->setPassword(empty);
 		_channels.push_back(c);
 		(*usrIt)->addFlag(c->getId(), 'o');
 		it--;
