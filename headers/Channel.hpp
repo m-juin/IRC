@@ -39,7 +39,7 @@ class Channel {
 		void	addUser(User *user);
 		void	addOperator(User *op, std::string &name);
 		
-		void	rmFlag(char flag);
+		void	rmFlag(char flag, User *op);
 		void	kickUser(User *op, std::string &name);
 		void	rmOperator(User *op, std::string &name);
 

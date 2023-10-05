@@ -200,7 +200,7 @@ void Server::checkPass(std::pair<Command, std::string>cmd, int i)
 	}
 	if (cmd.second == _password)
 	{
-		//StaticFunctions::SendToFd(_socket[i], "Password OK\r\n", "Now authenticate you with /NICK /USER", 0);
+		StaticFunctions::SendToFd(_socket[i], "Password OK\r\n", "Now authenticate you with /NICK /USER", 0);
 		std::list<User *>::iterator it = _users.end();
 		int id;
 		if (_users.end() != _users.begin())
@@ -377,7 +377,7 @@ bool	Server::isUserAuthenticated(int i)
 	std::list<User *>::iterator usrIt = StaticFunctions::findByFd(_users, _socket[i]);
 	if (usrIt == _users.end())
 	{
-		StaticFunctions::SendToFd(_socket[i], ERR_NOTREGISTERED, "", 0);
+		//StaticFunctions::SendToFd(_socket[i], ERR_NOTREGISTERED, "", 0);
 		return	false;
 	}
 	return	true;
@@ -435,7 +435,7 @@ void	Server::setUsername(std::pair<Command, std::string>cmd, int i)
 		return;
 	}
 	(*it)->setUsername(cmd.second);
-	StaticFunctions::SendToFd(_socket[i], RPL_WELCOME((std::string)">ALL", (*it)->getNickname()), "", 0);
+	//StaticFunctions::SendToFd(_socket[i], RPL_WELCOME((std::string)">ALL", (*it)->getNickname()), "", 0);
 }
 
 void	Server::messageChannel(std::pair<Command, std::string>cmd, int i, User *op)
@@ -492,8 +492,7 @@ void Server::setTopic(std::pair<Command, std::string>cmd, int i)
 		}
 		else
 		{
-			// localhost ou 127.0.0.1 ?
-			std::string message = ":irc.example.com 332 " + (*it)->getNickname() + " " + cmd.second + " " + myChan->getTopic() + "\r\n";
+			std::string message = ":127.0.0.1 332 " + (*it)->getNickname() + " " + cmd.second + " " + myChan->getTopic() + "\r\n";
 			send(_socket[i], message.c_str(), message.size(), 0);
 		}
 		return ;
