@@ -177,8 +177,8 @@ void	Channel::updateFlag(std::vector<std::string> flags, User *op)
 	if (flags[1][0] == '+' && flags[1][1] == 'l' && !flags[2].empty()) // limit user
 	{
 		char *end = NULL;
-		int i = std::strtof(flags[2].c_str(), &end);
-		if (end != NULL)
+		long i = std::strtol(flags[2].c_str(), &end, 10);
+		if (end != NULL && i > 1000 && i < 0)
 			StaticFunctions::SendToFd(op->getFd(), "+l need number", "", 0);
 		else
 		{
