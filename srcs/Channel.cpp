@@ -174,10 +174,17 @@ void	Channel::updateFlag(std::vector<std::string> flags, User *op)
 	else if (flags[1][0] == '-' && flags[1][1] == 'o' && !flags[3].empty())
 		rmOperator(op, flags[3]);
 	
-	if (flags[1][0] == '+' && flags[1][1] == 'l' && !flags[3].empty()) // limit user
+	if (flags[1][0] == '+' && flags[1][1] == 'l' && !flags[2].empty()) // limit user
 	{
-		setUserLimit(std::strtof(flags[3].c_str(), NULL));
-		StaticFunctions::SendToFd(op->getFd(), ":" + op->getNickname() + " add limit " + flags[3] + " " + _name, "", 0);
+		char *end = NULL;
+		int i = std::strtof(flags[2].c_str(), &end);
+		if (end != NULL)
+			StaticFunctions::SendToFd(op->getFd(), "+l need number", "", 0);
+		else
+		{
+			setUserLimit(i);
+			StaticFunctions::SendToFd(op->getFd(), ":" + op->getNickname() + " add limit " + flags[2] + " " + _name, "", 0);
+		}
 	}
 	else if (flags[1][0] == '-' && flags[1][1] == 'l' && !flags[3].empty())
 	{
@@ -185,7 +192,7 @@ void	Channel::updateFlag(std::vector<std::string> flags, User *op)
 		StaticFunctions::SendToFd(op->getFd(), ":" + op->getNickname() + " delete limit " + _name, "", 0);
 	}
 
-	if (flags[1][0] == '+' && flags[1][1] == 'k' && !flags[3].empty()) // limit user
+	if (flags[1][0] == '+' && flags[1][1] == 'k' && !flags[3].empty()) // password channel
 	{
 		setPassword(flags[3]);
 		StaticFunctions::SendToFd(op->getFd(), ":" + op->getNickname() + " add password " + flags[3] + " " + _name, "", 0);
