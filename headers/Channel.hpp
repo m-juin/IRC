@@ -2,6 +2,7 @@
 #include <iostream>
 #include <algorithm>
 #include <unistd.h>
+#include <vector>
 #include "Define.hpp"
 
 
@@ -9,6 +10,7 @@
 # define CHANNEL_HPP
 
 class User;
+struct Parser;
 
 class Channel {
 
@@ -32,7 +34,7 @@ class Channel {
 		void	setUserLimit(std::size_t usr);		
 		void	setTopic(std::string &topic);	
 
-		void	updateFlag(const std::string flag, User *op);
+		void	updateFlag(std::vector<std::string>, User *op);
 		void	addFlag(char flag);
 		void	addUser(User *user);
 		void	addOperator(User *op, std::string &name);

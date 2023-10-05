@@ -1,4 +1,5 @@
 #include "Channel.hpp"
+#include "Parser.hpp"
 #include "User.hpp"
 
 Channel::Channel(void)
@@ -129,7 +130,7 @@ bool	Channel::isUserOp(User *op)
 {
 	if (op->getFlags(this->_id).find('o') == std::string::npos)
 	{
-		std::cerr << "Insufficient permissions for this action" << std::endl;
+		StaticFunctions::SendToFd(op->getFd(), ERR_CHANOPRIVSNEEDED(this->_name), "", 0);
 		return	false;
 	}
 	return	true;
@@ -143,27 +144,35 @@ static bool	isValidFlag(const char c)
 	return false;
 }
 
-void	Channel::updateFlag(const std::string flag, User *op)
+void	Channel::updateFlag(std::vector<std::string> flags, User *op)
 {
-	if (flag.size() < 2 || flag.size() > 2)
+	if (flags.size() < 2)
 	{
-		std::cerr << "Invalid flag: " << flag << std::endl;
-		return ;
-	}
-	if (isValidFlag(flag[1]) == false)
-	{
-		std::cerr << "User flag error: Invalid flag: \'" << flag[1] << "\'" << std::endl;
+		StaticFunctions::SendToFd(op->getFd(), ERR_NEEDMOREPARAMS(flags[0]), "", 0);
 		return ;
 	}
 	if (isUserOp(op) == false)
-		return	;
-	if (flag[0] == '+')
-		addFlag(flag[1]);
-	else if (flag[0] == '-')
-		rmFlag(flag[1]);
-	else
-		std::cerr << "User flag error: Invalid flag sign: \'" << flag[0] << "\'" << std::endl;
+		return ;
+	if (!flags[1].empty() && flags[1].size() != 2)
+	{
+		StaticFunctions::SendToFd(op->getFd(), ERR_NEEDMOREPARAMS(flags[1]), "", 0);
+		return;
+	}
+	if (isValidFlag(flags[1][1]) == false)
+	{
+		StaticFunctions::SendToFd(op->getFd(), ERR_UMODEUNKNOWNFLAG, "", 0);
+		return ;
+	}
+	if (flags[1][0] == '+')
+		addFlag(flags[1][1]);
+	else if (flags[1][0] == '-')
+		rmFlag(flags[1][1]);
 
+	// Check if channel is in o mode
+	if (flags[1][0] == '+' && flags[1][1] == 'o' && !flags[3].empty())
+		addOperator(op, flags[3]);
+	else if (flags[1][0] == '-' && flags[1][1] == 'o' && !flags[3].empty())
+		rmOperator(op, flags[3]);
 }
 
 void	Channel::rmFlag(char flag)
@@ -202,11 +211,8 @@ void	Channel::changeTopic(User *usr, std::string newTopic)
 {
 	if (this->_channelMod.find('t') != std::string::npos)
 	{
-		if (usr->getFlags(this->_id).find('o') == std::string::npos)
-		{
-			StaticFunctions::SendToFd(usr->getFd(), ERR_CHANOPRIVSNEEDED(this->getName()), "", 0);
+		if (isUserOp(usr) == false)
 			return	;
-		}
 	}
 	this->_topic = newTopic;
 }
@@ -219,11 +225,8 @@ void		Channel::kickUser(User *op, std::string &name)
 		StaticFunctions::SendToFd(op->getFd(), ERR_USERNOTINCHANNEL(name, this->getName()), "", 0);
 		return	;
 	}
-	if (op->getFlags(this->_id).find('o') == std::string::npos)
-	{
-		StaticFunctions::SendToFd(op->getFd(), ERR_CHANOPRIVSNEEDED(this->getName()), "", 0);
-		return	;
-	}
+	if (isUserOp(op) == false)
+			return	;
 	std::string message = ":" + op->getNickname() + " KICK " + getName() + " " + name;
 	StaticFunctions::SendToFd((*its)->getFd(), message, "", 0);
 	(*its)->disconnectChannel(this);
@@ -242,6 +245,7 @@ void		Channel::leaveUser(User *usr)
 
 void		Channel::addOperator(User *op, std::string &name)
 {
+	// Peut enlever le check op ici
 	if (isUserOp(op) == false)
 		return	;
 	std::list<User *>::iterator its = find(this->_users.begin(), this->_users.end(), name);
@@ -255,6 +259,7 @@ void		Channel::addOperator(User *op, std::string &name)
 
 void		Channel::rmOperator(User *op, std::string &name)
 {
+	// Peut enlever le check op ici
 	if (isUserOp(op) == false)
 		return	;
 	std::list<User *>::iterator its = find(this->_users.begin(), this->_users.end(), name);

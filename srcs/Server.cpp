@@ -137,46 +137,14 @@ void Server::launch()
 void Server::changeModeChannel(std::pair<Command, std::string>cmd, int i)
 {
 	std::list<User *>::iterator usrIt = StaticFunctions::findByFd(_users, _socket[i]);
-	std::vector<std::string> v = Parser::SplitCmd(cmd.second, " ");
-	std::list<Channel *>::iterator it = find(_channels.begin(), _channels.end(), v[0]);
+	std::vector<std::string> cmdSplit = Parser::SplitCmd(cmd.second, " ");
+	std::list<Channel *>::iterator it = find(_channels.begin(), _channels.end(), cmdSplit[0]);
 	if (it == _channels.end())
 	{
-		StaticFunctions::SendToFd(_socket[i], ERR_NOSUCHCHANNEL(v[0]), "", 0);
+		StaticFunctions::SendToFd(_socket[i], ERR_NOSUCHCHANNEL(cmdSplit[0]), "", 0);
 		return ;
 	}
-
-	// Peut-être utiliser updateFlag de Channel
-	if (v.size() < 2)
-	{
-		StaticFunctions::SendToFd(_socket[i], ERR_NEEDMOREPARAMS(v[0]), "", 0);
-		return ;
-	}
-	if ((*it)->isUserOp(*usrIt) == false)
-	{
-		StaticFunctions::SendToFd(_socket[i], ERR_CHANOPRIVSNEEDED(v[0]), "", 0);
-		return ;
-	}
-	if (!v[1].empty() && v[1].size() != 2)
-	{
-		StaticFunctions::SendToFd(_socket[i], ERR_NEEDMOREPARAMS(v[1]), "", 0);
-		return;
-	}
-	if (v[1][1] != 'i' && v[1][1] != 't' && v[1][1] != 'k'  && v[1][1] != 'l' && v[1][1] != 'o')
-	{
-		StaticFunctions::SendToFd(_socket[i], ERR_UMODEUNKNOWNFLAG, "", 0);
-		return ;
-	}
-	if (v[1][0] == '+')
-		(*it)->addFlag(v[1][1]);
-	else if (v[1][0] == '-')
-		(*it)->rmFlag(v[1][1]);
-	if (v[1][0] == '+' && v[1][1] == 'o' && !v[3].empty())
-	{
-		(*it)->addOperator(*usrIt, v[3]);
-		return;
-	}
-	else if (v[1][0] == '-' && v[1][1] == 'o' && !v[3].empty())
-		(*it)->rmOperator(*usrIt, v[3]);
+	(*it)->updateFlag(cmdSplit, *usrIt);
 }
 
 void Server::kickUser(std::pair<Command, std::string>cmd, int i)
@@ -184,9 +152,14 @@ void Server::kickUser(std::pair<Command, std::string>cmd, int i)
 	std::list<User *>::iterator usrIt = StaticFunctions::findByFd(_users, _socket[i]);
 	std::vector<std::string> v = Parser::SplitCmd(cmd.second, " ");
 	std::list<Channel*>::iterator chan = find(_channels.begin(), _channels.end(), v[0]);
+	if (chan == _channels.end())
+	{
+		StaticFunctions::SendToFd(_socket[i], ERR_NOTONCHANNEL(v[0]), "", 0);
+		return	;
+	}
 	if (v[1].size() == 0)
 	{
-		std::cout << "ça marche pas" << std::endl;
+		StaticFunctions::SendToFd(_socket[i], ERR_NEEDMOREPARAMS(static_cast<std::string>("KICK")), "", 0);
 		return	;
 	}
 	(*chan)->kickUser(*usrIt, v[1]);
@@ -251,7 +224,6 @@ void Server::joinChannel(std::pair<Command, std::string>cmd, int i)
 	std::list<Channel *>::iterator it = find(_channels.begin(), _channels.end(), cmd.second);
 	if (it != _channels.end())
 	{
-		//StaticFunctions::SendToFd(_socket[i], "You joined channel ", cmd.second, 0);
 		(*it)->addUser(*usrIt);
 	}
 	else if (it == _channels.end())
