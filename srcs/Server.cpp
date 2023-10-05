@@ -231,7 +231,7 @@ void Server::joinChannel(std::pair<Command, std::string>cmd, int i)
 			StaticFunctions::SendToFd(_socket[i], (*it)->getName() + " need password", "", 0);
 			return;
 		}
-		if ((*it)->getPassword() != v[1])
+		if (!(*it)->getPassword().empty() && (*it)->getPassword() != v[1])
 		{
 			StaticFunctions::SendToFd(_socket[i], "Incorrect password", "", 0);
 			return;
