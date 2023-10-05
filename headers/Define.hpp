@@ -6,10 +6,11 @@
 
 #define RPL_WELCOME(networkname, nick) (":127.0.0.1 001 " + nick +" Welcome to the " + networkname + " Network " + nick)
 #define RPL_NOTOPIC "No topic is set"
-#define RPL_TOPIC(channel, topic) (channel + " :" + topic)
+#define RPL_TOPIC(nick, channel, topic) (":127.0.0.1 332 " + nick + " " + channel + " :" + topic)
 #define RPL_INVITING(nick, channel) (nick + channel)
-#define RPL_NAMREPLY(symbol, channel, prefix, nick) (symbol + channel + " :[" + prefix + "]" + nick)
-#define RPL_ENDOFNAMES(channel) (channel + " :End of /NAMES list")
+#define RPL_NAMREPLY(channel, nickTo, nickFrom) (":127.0.0.1 353 " + nickFrom + " = " + channel + " : " + nickTo)
+//#define RPL_NAMREPLY2(channel, nickTo, nickFrom) (":127.0.0.1 353 " + nickFrom + " @ " + channel + " :"+ nickTo)
+#define RPL_ENDOFNAMES(nick, channel) (":127.0.0.1 366 " + nick + " " + channel + " :End of /NAMES list")
 
 #define ERR_NOSUCHNICK(nick) (nick + " :No such nick/channel")
 #define ERR_NOSUCHSERVER(serv) (serv + " :No such server")

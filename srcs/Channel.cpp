@@ -104,16 +104,18 @@ void		Channel::connectToChannel(User *user)
 	this->_users.push_back(user);
 	std::string message = ":" + user->getNickname() + " JOIN " + this->getName();
 	StaticFunctions::SendToFd(user->getFd(), message, "" , 0);
-	StaticFunctions::SendToFd(user->getFd(), RPL_TOPIC(_name, _topic), "", 0);
+	StaticFunctions::SendToFd(user->getFd(), RPL_TOPIC(user->getNickname(), _name, _topic), "", 0);
 	std::list<User *>::iterator it = _users.begin();
+	std::string usersNick;
 	for (; it != _users.end(); it++)
 	{
+		// Need to add nickname to a string and @ if op
 		if ((*it)->getFlags(_id).find('o') != std::string::npos)
-			StaticFunctions::SendToFd(user->getFd(), RPL_NAMREPLY('=', _name, 'o', (*it)->getNickname()), "", 0);
-		else
-			StaticFunctions::SendToFd(user->getFd(), RPL_NAMREPLY('=', _name, ' ', (*it)->getNickname()), "", 0);
+			usersNick.append("@");
+		usersNick.append((*it)->getNickname() + ' ');
 	}
-	StaticFunctions::SendToFd(user->getFd(), RPL_ENDOFNAMES(_name), "", 0);
+	StaticFunctions::SendToFd(user->getFd(), RPL_NAMREPLY(_name, usersNick, user->getNickname()), "", 0);
+	StaticFunctions::SendToFd(user->getFd(), RPL_ENDOFNAMES(user->getNickname(), _name), "", 0);
 }
 
 void		Channel::addUser(User *user)
