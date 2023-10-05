@@ -98,24 +98,29 @@ void		Channel::setTopic(std::string &topic)
 	this->_topic = topic;
 }
 
+void		Channel::connectToChannel(User *user)
+{
+	user->connectChannel(this->_id);
+	this->_users.push_back(user);
+	std::string message = ":" + user->getNickname() + " JOIN " + this->getName();
+	StaticFunctions::SendToFd(user->getFd(), message, "" , 0);
+	StaticFunctions::SendToFd(user->getFd(), RPL_TOPIC(_name, _topic), "", 0);
+	std::list<User *>::iterator it = _users.begin();
+	for (; it != _users.end(); it++)
+	{
+		if ((*it)->getFlags(_id).find('o') != std::string::npos)
+			StaticFunctions::SendToFd(user->getFd(), RPL_NAMREPLY('=', _name, 'o', (*it)->getNickname()), "", 0);
+		else
+			StaticFunctions::SendToFd(user->getFd(), RPL_NAMREPLY('=', _name, ' ', (*it)->getNickname()), "", 0);
+	}
+	StaticFunctions::SendToFd(user->getFd(), RPL_ENDOFNAMES(_name), "", 0);
+}
+
 void		Channel::addUser(User *user)
 {
 	if (this->_channelMod.find('i') == std::string::npos)
 	{
-		user->connectChannel(this->_id);
-		this->_users.push_back(user);
-		std::string message = ":" + user->getNickname() + " JOIN " + this->getName();
-		StaticFunctions::SendToFd(user->getFd(), message, "" , 0);
-		StaticFunctions::SendToFd(user->getFd(), RPL_TOPIC(_name, _topic), "", 0);
-		std::list<User *>::iterator it = _users.begin();
-		for (; it != _users.end(); it++)
-		{
-			if ((*it)->getFlags(_id).find('o') != std::string::npos)
-				StaticFunctions::SendToFd(user->getFd(), RPL_NAMREPLY('=', _name, 'o', (*it)->getNickname()), "", 0);
-			else
-				StaticFunctions::SendToFd(user->getFd(), RPL_NAMREPLY('=', _name, ' ', (*it)->getNickname()), "", 0);
-		}
-		StaticFunctions::SendToFd(user->getFd(), RPL_ENDOFNAMES(_name), "", 0);
+		connectToChannel(user);
 	}
 	else
 	{
@@ -125,21 +130,8 @@ void		Channel::addUser(User *user)
 			StaticFunctions::SendToFd(user->getFd(), ERR_INVITEONLYCHAN(this->getName()), "", 0);
 		else
 		{
-			user->connectChannel(this->_id);
-			this->_users.push_back(user);
 			_invitedUsers.erase(it);
-			std::string message = ":" + user->getNickname() + " JOIN " + this->getName();
-			StaticFunctions::SendToFd(user->getFd(), message, "" , 0);
-			StaticFunctions::SendToFd(user->getFd(), RPL_TOPIC(_name, _topic), "", 0);
-			std::list<User *>::iterator it = _users.begin();
-			for (; it != _users.end(); it++)
-			{
-				if ((*it)->getFlags(_id).find('o') != std::string::npos)
-					StaticFunctions::SendToFd(user->getFd(), RPL_NAMREPLY('=', _name, 'o', (*it)->getNickname()), "", 0);
-				else
-					StaticFunctions::SendToFd(user->getFd(), RPL_NAMREPLY('=', _name, ' ', (*it)->getNickname()), "", 0);
-			}
-			StaticFunctions::SendToFd(user->getFd(), RPL_ENDOFNAMES(_name), "", 0);
+			connectToChannel(user);
 		}
 	}
 }

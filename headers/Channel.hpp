@@ -29,15 +29,16 @@ class Channel {
 		std::list<User *>	getUsers()		const;
 		std::string			getChannelMod() const;
 
-		void	setName(std::string &name);		
+		void	setName(std::string &name);
 		void	setPassword(std::string &password);
-		void	setUserLimit(std::size_t usr);		
-		void	setTopic(std::string &topic);	
+		void	setUserLimit(std::size_t usr);
+		void	setTopic(std::string &topic);
 
 		void	updateFlag(std::vector<std::string>, User *op);
 		void	addFlag(char flag);
 		void	addUser(User *user);
 		void	addOperator(User *op, std::string &name);
+		void	connectToChannel(User *user);
 		
 		void	rmFlag(char flag, User *op);
 		void	kickUser(User *op, std::string &name);
