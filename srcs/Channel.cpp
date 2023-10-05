@@ -166,7 +166,7 @@ void	Channel::updateFlag(std::vector<std::string> flags, User *op)
 	if (flags[1][0] == '+')
 		addFlag(flags[1][1]);
 	else if (flags[1][0] == '-')
-		rmFlag(flags[1][1]);
+		rmFlag(flags[1][1], op);
 
 	// Check if channel is in o mode
 	if (flags[1][0] == '+' && flags[1][1] == 'o' && !flags[3].empty())
@@ -198,21 +198,22 @@ void	Channel::updateFlag(std::vector<std::string> flags, User *op)
 	}
 }
 
-void	Channel::rmFlag(char flag)
+void	Channel::rmFlag(char flag, User *op)
 {
 	std::size_t idx = this->_channelMod.find(flag);
 	if (idx != std::string::npos)
 		this->_channelMod.erase(idx, 1);
 	else
-		std::cerr << "Flag not set to this channel" << std::endl;
+		StaticFunctions::SendToFd(op->getFd(), ERR_UMODEUNKNOWNFLAG, "", 0);
 }
 
 void	Channel::addFlag(char flag)
 {
 	if (this->_channelMod.find(flag) == std::string::npos)
 		this->_channelMod += flag;
-	else
-		std::cerr << "Flag already set to this channel" << std::endl;
+	// Je pense qu'il n'y a pas de message d'erreur
+	/*else
+		std::cerr << "Flag already set to this channel" << std::endl;*/
 }
 
 void	Channel::changeUserLimit(User *op, std::size_t limit)
@@ -223,11 +224,6 @@ void	Channel::changeUserLimit(User *op, std::size_t limit)
 	{
 		this->_usersLimit = limit;	
 	}
-	else
-	{
-		std::cerr << "User limit not set on this channel" << std::endl;
-	}
-
 }
 
 void	Channel::changeTopic(User *usr, std::string newTopic)
@@ -250,8 +246,12 @@ void		Channel::kickUser(User *op, std::string &name)
 	}
 	if (isUserOp(op) == false)
 			return	;
-	std::string message = ":" + op->getNickname() + " KICK " + getName() + " " + name;
-	StaticFunctions::SendToFd((*its)->getFd(), message, "", 0);
+	std::list<User *>::iterator usrIt = _users.begin();
+	for (; usrIt != _users.end(); usrIt++)
+	{
+		if (*usrIt != op)
+			StaticFunctions::SendToFd((*usrIt)->getFd(),  ":" + op->getNickname() + " KICK " + getName() + " " + name, "", 0);
+	}
 	(*its)->disconnectChannel(this);
 }
 
@@ -268,7 +268,6 @@ void		Channel::leaveUser(User *usr)
 
 void		Channel::addOperator(User *op, std::string &name)
 {
-	// Peut enlever le check op ici
 	if (isUserOp(op) == false)
 		return	;
 	std::list<User *>::iterator its = find(this->_users.begin(), this->_users.end(), name);
@@ -282,7 +281,6 @@ void		Channel::addOperator(User *op, std::string &name)
 
 void		Channel::rmOperator(User *op, std::string &name)
 {
-	// Peut enlever le check op ici
 	if (isUserOp(op) == false)
 		return	;
 	std::list<User *>::iterator its = find(this->_users.begin(), this->_users.end(), name);
