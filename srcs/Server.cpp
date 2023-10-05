@@ -200,7 +200,7 @@ void Server::checkPass(std::pair<Command, std::string>cmd, int i)
 	}
 	if (cmd.second == _password)
 	{
-		StaticFunctions::SendToFd(_socket[i], "Password OK\r\n", "Now authenticate you with /NICK /USER", 0);
+		//StaticFunctions::SendToFd(_socket[i], "Password OK\r\n", "Now authenticate you with /NICK /USER", 0);
 		std::list<User *>::iterator it = _users.end();
 		int id;
 		if (_users.end() != _users.begin())
@@ -396,7 +396,7 @@ void	Server::setNickname(std::pair<Command, std::string>cmd, int i)
 	std::list<User *>::iterator usrIt = find(_users.begin(), _users.end(), cmd.second);
 	if (usrIt != _users.end())
 	{
-		StaticFunctions::SendToFd(_socket[i], ERR_NICKCOLLISION, "", 0);
+		StaticFunctions::SendToFd(_socket[i], ERR_NICKNAMEINUSE(cmd.second), "", 0);
 		return	;
 	}
 	if (cmd.second.size() == 0)
