@@ -173,6 +173,7 @@ void	Channel::updateFlag(std::vector<std::string> flags, User *op)
 		addOperator(op, flags[3]);
 	else if (flags[1][0] == '-' && flags[1][1] == 'o' && !flags[3].empty())
 		rmOperator(op, flags[3]);
+	
 	if (flags[1][0] == '+' && flags[1][1] == 'l' && !flags[3].empty()) // limit user
 	{
 		setUserLimit(std::strtof(flags[3].c_str(), NULL));
@@ -182,6 +183,18 @@ void	Channel::updateFlag(std::vector<std::string> flags, User *op)
 	{
 		setUserLimit(0);
 		StaticFunctions::SendToFd(op->getFd(), ":" + op->getNickname() + " delete limit " + _name, "", 0);
+	}
+
+	if (flags[1][0] == '+' && flags[1][1] == 'k' && !flags[3].empty()) // limit user
+	{
+		setPassword(flags[3]);
+		StaticFunctions::SendToFd(op->getFd(), ":" + op->getNickname() + " add password " + flags[3] + " " + _name, "", 0);
+	}
+	else if (flags[1][0] == '-' && flags[1][1] == 'k' && !flags[3].empty())
+	{
+		std::string empty = "";
+		setPassword(empty);
+		StaticFunctions::SendToFd(op->getFd(), ":" + op->getNickname() + " delete password " + _name, "", 0);
 	}
 }
 
