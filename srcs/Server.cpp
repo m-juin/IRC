@@ -6,7 +6,6 @@
 
 #include <sys/select.h>
 #include <string>
-#include <sstream>
 
 
 Server::Server(std::size_t port, std::string password)
@@ -184,6 +183,8 @@ void Server::quitServer(std::pair<Command, std::string>cmd, int i)
 			}
 		}
 		(*chan)->leaveUser(*usrIt);
+		if ((*chan)->getUsers().empty())
+			_channels.erase(chan);
 	}
 	_users.erase(usrIt);
 	close(_socket[i]);
@@ -242,7 +243,7 @@ void Server::joinChannel(std::pair<Command, std::string>cmd, int i)
 		else if ((*it)->getUserLimit() != 0 && (*it)->getUsers().size() + 1 < (*it)->getUserLimit())
 			(*it)->addUser(*usrIt);
 		else
-			std::cerr << "impossible la limit est depasse" << std::endl;
+			StaticFunctions::SendToFd(_socket[i], ERR_CHANNELISFULL(cmd.second), "", 0);
 	}
 	else if (it == _channels.end())
 	{
@@ -267,16 +268,15 @@ void Server::leaveChannel(std::pair<Command, std::string>cmd, int i)
 	std::vector<std::string> v = Parser::SplitCmd(cmd.second, " ");
 	std::list<User *>::iterator usrIt = StaticFunctions::findByFd(_users, _socket[i]);
 	std::list<Channel *>::iterator it = find(_channels.begin(), _channels.end(), v[0]);
-	std::string message;
 	if (it == _channels.end())
-		message = v[0] + " :No such channel\r\n";
+		StaticFunctions::SendToFd(_socket[i], ERR_NOSUCHCHANNEL(v[0]), "", 0);
 	else
 	{
 		(*usrIt)->disconnectChannel((*it));
-		message = ":" + (*usrIt)->getNickname() + " PART " + (*it)->getName() + "\r\n";
+		StaticFunctions::SendToFd(_socket[i], ":" + (*usrIt)->getNickname() + " PART " + (*it)->getName(), "", 0);
 	}
-	send(_socket[i], message.c_str(), message.size(), 0);
-	std::cout << message << std::endl;
+	if ((*it)->getUsers().empty())
+		_channels.erase(it);
 }
 
 fd_set Server::addNewSocket()
@@ -497,6 +497,7 @@ void Server::setTopic(std::pair<Command, std::string>cmd, int i)
 		}
 		else
 		{
+			// localhost ou 127.0.0.1 ?
 			std::string message = ":irc.example.com 332 " + (*it)->getNickname() + " " + cmd.second + " " + myChan->getTopic() + "\r\n";
 			send(_socket[i], message.c_str(), message.size(), 0);
 		}
