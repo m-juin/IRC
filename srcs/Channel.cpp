@@ -96,6 +96,15 @@ void		Channel::setTopic(std::string &topic)
 	this->_topic = topic;
 }
 
+void		Channel::sendToEveryuser(std::string toSend)
+{
+	std::list<User *>::iterator it = _users.begin();
+	for (; it != _users.end(); it++)
+	{
+		StaticFunctions::SendToFd((*it)->getFd(), toSend, "" , 0);
+	}
+}
+
 void		Channel::connectToChannel(User *user)
 {
 	user->connectChannel(this->_id);

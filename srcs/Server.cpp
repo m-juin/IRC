@@ -172,16 +172,7 @@ void Server::quitServer(std::pair<Command, std::string>cmd, int i)
 	{
 		std::size_t id = (*usrIt)->getChanId(nbChan);
 		std::list<Channel *>::iterator chan = StaticFunctions::findChannelById(_channels, id);
-		std::list<User *> userChan = (*chan)->getUsers();
-		std::list<User *>::iterator itUserChan = userChan.begin();
-		for (; itUserChan != userChan.end(); itUserChan++)
-		{
-			if (_socket[i] != (*itUserChan)->getFd())
-			{
-				std::string message = ":" + (*usrIt)->getNickname() + " QUIT \"" + cmd.second + "\"\r\n";
-				send((*itUserChan)->getFd(), message.c_str(), message.size(), 0);
-			}
-		}
+		(*chan)->sendToEveryuser(":" + (*usrIt)->getNickname() + " QUIT \"" + cmd.second);
 		(*chan)->leaveUser(*usrIt);
 		if ((*chan)->getUsers().empty())
 			_channels.erase(chan);
@@ -200,7 +191,6 @@ void Server::checkPass(std::pair<Command, std::string>cmd, int i)
 	}
 	if (cmd.second == _password)
 	{
-		//StaticFunctions::SendToFd(_socket[i], "Password OK\r\n", "Now authenticate you with /NICK /USER", 0);
 		std::list<User *>::iterator it = _users.end();
 		int id;
 		if (_users.end() != _users.begin())
@@ -265,8 +255,8 @@ void Server::leaveChannel(std::pair<Command, std::string>cmd, int i)
 		StaticFunctions::SendToFd(_socket[i], ERR_NOSUCHCHANNEL(v[0]), "", 0);
 	else
 	{
+		(*it)->sendToEveryuser(":" + (*usrIt)->getNickname() + " PART " + (*it)->getName());
 		(*usrIt)->disconnectChannel((*it));
-		StaticFunctions::SendToFd(_socket[i], ":" + (*usrIt)->getNickname() + " PART " + (*it)->getName(), "", 0);
 	}
 	if ((*it)->getUsers().empty())
 		_channels.erase(it);
@@ -386,7 +376,7 @@ void	Server::setNickname(std::pair<Command, std::string>cmd, int i)
 	if (isUserAuthenticated(i) == false)
 		return	;
 	std::list<User *>::iterator it = StaticFunctions::findByFd(_users, _socket[i]);
-	if (cmd.second.find_first_of(" \n\t\r\v\f#&:") != std::string::npos)
+	if (cmd.second.size() <= 1 || cmd.second.find_first_of(" \n\t\r\v\f#&:") != std::string::npos)
 	{
 		StaticFunctions::SendToFd(_socket[i], ERR_ERRONEUSNICKNAME(cmd.second), "", 0);
 		return	;

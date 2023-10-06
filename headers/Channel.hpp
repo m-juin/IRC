@@ -48,6 +48,8 @@ class Channel {
 		void	changeTopic(User *usr, std::string newTopic);
 		void	changeUserLimit(User *op, std::size_t limit);
 
+		void	sendToEveryuser(std::string toSend);
+
 		bool	isUserOp(User *op);
 		
 	private:

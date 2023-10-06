@@ -36,7 +36,7 @@
 #define ERR_UMODEUNKNOWNFLAG "Unknown MODE flag"
 #define ERR_USERSDONTMATCH "Cant change mode for other users"
 #define ERR_INVALIDKEY(channel) (channel + " :Key is not well-formed")
-#define ERR_ERRONEUSNICKNAME(nick) (nick + " :Erroneus nickname")
+#define ERR_ERRONEUSNICKNAME(nick) (":127.0.0.1 432 * " + nick + " :Erroneus nickname")
 #define ERR_NICKCOLLISION "Nickname collision KILL"
 
 #endif
