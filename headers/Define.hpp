@@ -9,7 +9,6 @@
 #define RPL_TOPIC(nick, channel, topic) (":127.0.0.1 332 " + nick + " " + channel + " :" + topic)
 #define RPL_INVITING(nick, channel) (nick + channel)
 #define RPL_NAMREPLY(channel, nickTo, nickFrom) (":127.0.0.1 353 " + nickFrom + " = " + channel + " : " + nickTo)
-//#define RPL_NAMREPLY2(channel, nickTo, nickFrom) (":127.0.0.1 353 " + nickFrom + " @ " + channel + " :"+ nickTo)
 #define RPL_ENDOFNAMES(nick, channel) (":127.0.0.1 366 " + nick + " " + channel + " :End of /NAMES list")
 
 #define ERR_NOSUCHNICK(nick) (nick + " :No such nick/channel")

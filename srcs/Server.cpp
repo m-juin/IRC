@@ -253,8 +253,6 @@ void Server::joinChannel(std::pair<Command, std::string>cmd, int i)
 		else
 			c->setPassword(empty);
 		_channels.push_back(c);
-		(*usrIt)->addFlag(c->getId(), 'o');
-		it--;
 	}
 }
 
