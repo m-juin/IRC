@@ -13,7 +13,6 @@ Channel::Channel(std::size_t id, std::string name, User *user)
 	this->_name = name;
 	this->_channelMod = "o";
 	this->_usersLimit = 0;
-	this->_users.push_back(user);
 	user->connectChannel(this->_id);
 	user->addFlag(_id, 'o');
 	addUser(user);
@@ -105,7 +104,7 @@ void		Channel::connectToChannel(User *user)
 	std::string usersNick;
 	for (; it != _users.end(); it++)
 	{
-		StaticFunctions::SendToFd((*it)->getFd(),  ":" + user->getNickname() + " JOIN :" + this->getName(), "" , 0);
+		StaticFunctions::SendToFd((*it)->getFd(),  ":" + user->getNickname() + " JOIN :" + _name, "" , 0);
 		if ((*it)->getFlags(_id).find('o') != std::string::npos)
 			usersNick.append("@");
 		usersNick.append((*it)->getNickname() + ' ');
@@ -113,7 +112,6 @@ void		Channel::connectToChannel(User *user)
 	if (!_topic.empty())
 		StaticFunctions::SendToFd(user->getFd(), RPL_TOPIC(user->getNickname(), _name, _topic), "", 0);
 	StaticFunctions::SendToFd(user->getFd(), RPL_NAMREPLY(_name, usersNick, user->getNickname()), "", 0);
-	std::cout << RPL_NAMREPLY(_name, usersNick, user->getNickname()) << std::endl;
 	StaticFunctions::SendToFd(user->getFd(), RPL_ENDOFNAMES(user->getNickname(), _name), "", 0);
 }
 
