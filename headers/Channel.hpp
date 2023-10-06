@@ -49,7 +49,7 @@ class Channel {
 		void	changeUserLimit(User *op, std::size_t limit);
 
 		void	sendToEveryuser(std::string toSend);
-		void	sendToEveryuserBesideHimself(std::string toSend, User *him);
+		void	sendToEveryuserNotHimself(std::string toSend, User *him);
 
 		bool	isUserOp(User *op);
 		

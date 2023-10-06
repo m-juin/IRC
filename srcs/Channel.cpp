@@ -105,7 +105,7 @@ void		Channel::sendToEveryuser(std::string toSend)
 	}
 }
 
-void		Channel::sendToEveryuserBesideHimself(std::string toSend, User *him)
+void		Channel::sendToEveryuserNotHimself(std::string toSend, User *him)
 {
 	std::list<User *>::iterator it = _users.begin();
 	for (; it != _users.end(); it++)
@@ -212,28 +212,24 @@ void	Channel::updateFlag(std::string cmd, User *op)
 		{
 			setUserLimit(i);
 			sendToEveryuser(":" + op->getNickname() + " MODE " + cmd);
-			//StaticFunctions::SendToFd(op->getFd(), ":" + op->getNickname() + " MODE " + cmd, "", 0);
 		}
 	}
-	else if (flags[1][0] == '-' && flags[1][1] == 'l' && !flags[3].empty())
+	else if (flags[1][0] == '-' && flags[1][1] == 'l' && !flags[2].empty())
 	{
 		setUserLimit(0);
 		sendToEveryuser(":" + op->getNickname() + " MODE " + cmd);
-		//StaticFunctions::SendToFd(op->getFd(), ":" + op->getNickname() + " MODE " + cmd, "", 0);
 	}
 
-	if (flags[1][0] == '+' && flags[1][1] == 'k' && !flags[3].empty()) // password channel
+	if (flags[1][0] == '+' && flags[1][1] == 'k' && !flags[2].empty()) // password channel
 	{
 		setPassword(flags[3]);
 		sendToEveryuser(":" + op->getNickname() + " MODE " + cmd);
-		//StaticFunctions::SendToFd(op->getFd(), ":" + op->getNickname() + " add password " + flags[3] + " " + _name, "", 0);
 	}
-	else if (flags[1][0] == '-' && flags[1][1] == 'k' && !flags[3].empty())
+	else if (flags[1][0] == '-' && flags[1][1] == 'k' && !flags[2].empty())
 	{
 		std::string empty = "";
 		setPassword(empty);
 		sendToEveryuser(":" + op->getNickname() + " MODE " + cmd);
-		//StaticFunctions::SendToFd(op->getFd(), ":" + op->getNickname() + " delete password " + _name, "", 0);
 	}
 }
 

@@ -447,7 +447,7 @@ void	Server::messageChannel(std::pair<Command, std::string>cmd, int i, User *op)
 		StaticFunctions::SendToFd(_socket[i], ERR_NOSUCHCHANNEL(v[0]), "", 0);
 		return ;
 	}
-	myChan->sendToEveryuserBesideHimself(":" + op->getNickname() + " PRIVMSG " + cmd.second, op);
+	myChan->sendToEveryuserNotHimself(":" + op->getNickname() + " PRIVMSG " + cmd.second, op);
 }
 
 void Server::setTopic(std::pair<Command, std::string>cmd, int i)
