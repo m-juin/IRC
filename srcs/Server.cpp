@@ -143,7 +143,7 @@ void Server::changeModeChannel(std::pair<Command, std::string>cmd, int i)
 		StaticFunctions::SendToFd(_socket[i], ERR_NOSUCHCHANNEL(cmdSplit[0]), "", 0);
 		return ;
 	}
-	(*it)->updateFlag(cmdSplit, *usrIt);
+	(*it)->updateFlag(cmd.second, *usrIt);
 }
 
 void Server::kickUser(std::pair<Command, std::string>cmd, int i)
@@ -447,16 +447,7 @@ void	Server::messageChannel(std::pair<Command, std::string>cmd, int i, User *op)
 		StaticFunctions::SendToFd(_socket[i], ERR_NOSUCHCHANNEL(v[0]), "", 0);
 		return ;
 	}
-	std::list<User *> usr = myChan->getUsers();
-	std::list<User *>::iterator it = usr.begin();
-	for (; it != usr.end(); ++it)
-	{
-		if (_socket[i] != (*it)->getFd())
-		{
-			std::string message = ":" + op->getNickname() + " PRIVMSG " + cmd.second + "\r\n";
-			send((*it)->getFd(), message.c_str(), message.size(), 0);
-		}
-	}
+	myChan->sendToEveryuserBesideHimself(":" + op->getNickname() + " PRIVMSG " + cmd.second, op);
 }
 
 void Server::setTopic(std::pair<Command, std::string>cmd, int i)
@@ -486,16 +477,7 @@ void Server::setTopic(std::pair<Command, std::string>cmd, int i)
 		return ;
 	}
 	myChan->changeTopic(*currentUser, cmd.second);
-	if (myChan->isUserOp(*currentUser) == false)
-	{
-		StaticFunctions::SendToFd(_socket[i], ERR_CHANOPRIVSNEEDED(myChan->getName()), "", 0);
-		return ;
-	} 
-	for (; it != usr.end(); ++it)
-	{
-		std::string message = ":" + (*currentUser)->getNickname() + " TOPIC " + cmd.second + "\r\n";
-		send((*it)->getFd(), message.c_str(), message.size(), 0);
-	}
+	myChan->sendToEveryuser(":" + (*currentUser)->getNickname() + " TOPIC " + cmd.second );
 }
 
 

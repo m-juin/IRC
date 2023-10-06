@@ -34,7 +34,7 @@ class Channel {
 		void	setUserLimit(std::size_t usr);
 		void	setTopic(std::string &topic);
 
-		void	updateFlag(std::vector<std::string>, User *op);
+		void	updateFlag(std::string cmd, User *op);
 		void	addFlag(char flag);
 		void	addUser(User *user);
 		void	addOperator(User *op, std::string &name);
@@ -49,6 +49,7 @@ class Channel {
 		void	changeUserLimit(User *op, std::size_t limit);
 
 		void	sendToEveryuser(std::string toSend);
+		void	sendToEveryuserBesideHimself(std::string toSend, User *him);
 
 		bool	isUserOp(User *op);
 		

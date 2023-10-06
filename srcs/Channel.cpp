@@ -105,6 +105,16 @@ void		Channel::sendToEveryuser(std::string toSend)
 	}
 }
 
+void		Channel::sendToEveryuserBesideHimself(std::string toSend, User *him)
+{
+	std::list<User *>::iterator it = _users.begin();
+	for (; it != _users.end(); it++)
+	{
+		if (*it != him)
+			StaticFunctions::SendToFd((*it)->getFd(), toSend, "" , 0);
+	}
+}
+
 void		Channel::connectToChannel(User *user)
 {
 	user->connectChannel(this->_id);
@@ -161,8 +171,9 @@ static bool	isValidFlag(const char c)
 	return false;
 }
 
-void	Channel::updateFlag(std::vector<std::string> flags, User *op)
+void	Channel::updateFlag(std::string cmd, User *op)
 {
+	std::vector<std::string> flags = Parser::SplitCmd(cmd, " ");
 	if (flags.size() < 2)
 	{
 		StaticFunctions::SendToFd(op->getFd(), ERR_NEEDMOREPARAMS(flags[0]), "", 0);
@@ -200,25 +211,29 @@ void	Channel::updateFlag(std::vector<std::string> flags, User *op)
 		else
 		{
 			setUserLimit(i);
-			StaticFunctions::SendToFd(op->getFd(), ":" + op->getNickname() + " add limit " + flags[2] + " " + _name, "", 0);
+			sendToEveryuser(":" + op->getNickname() + " MODE " + cmd);
+			//StaticFunctions::SendToFd(op->getFd(), ":" + op->getNickname() + " MODE " + cmd, "", 0);
 		}
 	}
 	else if (flags[1][0] == '-' && flags[1][1] == 'l' && !flags[3].empty())
 	{
 		setUserLimit(0);
-		StaticFunctions::SendToFd(op->getFd(), ":" + op->getNickname() + " delete limit " + _name, "", 0);
+		sendToEveryuser(":" + op->getNickname() + " MODE " + cmd);
+		//StaticFunctions::SendToFd(op->getFd(), ":" + op->getNickname() + " MODE " + cmd, "", 0);
 	}
 
 	if (flags[1][0] == '+' && flags[1][1] == 'k' && !flags[3].empty()) // password channel
 	{
 		setPassword(flags[3]);
-		StaticFunctions::SendToFd(op->getFd(), ":" + op->getNickname() + " add password " + flags[3] + " " + _name, "", 0);
+		sendToEveryuser(":" + op->getNickname() + " MODE " + cmd);
+		//StaticFunctions::SendToFd(op->getFd(), ":" + op->getNickname() + " add password " + flags[3] + " " + _name, "", 0);
 	}
 	else if (flags[1][0] == '-' && flags[1][1] == 'k' && !flags[3].empty())
 	{
 		std::string empty = "";
 		setPassword(empty);
-		StaticFunctions::SendToFd(op->getFd(), ":" + op->getNickname() + " delete password " + _name, "", 0);
+		sendToEveryuser(":" + op->getNickname() + " MODE " + cmd);
+		//StaticFunctions::SendToFd(op->getFd(), ":" + op->getNickname() + " delete password " + _name, "", 0);
 	}
 }
 
@@ -235,9 +250,6 @@ void	Channel::addFlag(char flag)
 {
 	if (this->_channelMod.find(flag) == std::string::npos)
 		this->_channelMod += flag;
-	// Je pense qu'il n'y a pas de message d'erreur
-	/*else
-		std::cerr << "Flag already set to this channel" << std::endl;*/
 }
 
 void	Channel::changeUserLimit(User *op, std::size_t limit)
@@ -270,12 +282,7 @@ void		Channel::kickUser(User *op, std::string &name)
 	}
 	if (isUserOp(op) == false)
 			return	;
-	std::list<User *>::iterator usrIt = _users.begin();
-	for (; usrIt != _users.end(); usrIt++)
-	{
-		if (*usrIt != op)
-			StaticFunctions::SendToFd((*usrIt)->getFd(),  ":" + op->getNickname() + " KICK " + getName() + " " + name, "", 0);
-	}
+	sendToEveryuser(":" + op->getNickname() + " KICK " + getName() + " " + name);
 	(*its)->disconnectChannel(this);
 }
 
