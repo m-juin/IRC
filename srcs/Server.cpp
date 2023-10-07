@@ -365,12 +365,11 @@ fd_set Server::addNewSocket()
     			}
 				else if (newSocket >= 0)
 				{
-					for (int i = 1; i < 1024; i++)
+					for (int i = 1; i < 1000; i++)
 					{
 						if (_socket[i] < 0)
 						{
 							_socket[i] = newSocket;
-							//StaticFunctions::SendToFd(_socket[i], "Enter password with /PASS <pass>", 0);
 							break ;
 						}
 					}
@@ -383,7 +382,7 @@ fd_set Server::addNewSocket()
 
 void Server::closeAllSocket()
 {
-	for (int i = 0; i < 1024; i++)
+	for (int i = 0; i < 1000; i++)
 	{
 		if (_socket[i] >= 0)
 		{
@@ -409,7 +408,7 @@ Channel * Server::getChannel(std::string name)
 bool	Server::isUserCorrectlyConnected(int i, bool sendMessage)
 {
 	std::list<User *>::iterator usrIt = StaticFunctions::findByFd(_users, _socket[i]);
-	if (usrIt == _users.end() || (*usrIt)->getUsername().size() == 0 || (*usrIt)->getNickname().size() <= 1)
+	if (usrIt == _users.end() || (*usrIt)->getUsername().size() == 0 || (*usrIt)->getNickname() == "*")
 	{
 		if(sendMessage == true)
 			StaticFunctions::SendToFd(_socket[i], ERR_NOTREGISTERED((*usrIt)->getNickname()), 0);
@@ -435,7 +434,7 @@ void	Server::setNickname(std::pair<Command, std::string>cmd, int i)
 	if (isUserAuthenticated(i, true) == false)
 		return	;
 	std::list<User *>::iterator it = StaticFunctions::findByFd(_users, _socket[i]);
-	if (cmd.second.size() <= 1 || cmd.second.find_first_of(" \n\t\r\v\f#&:") != std::string::npos)
+	if (cmd.second.size() <= 1 || cmd.second.find_first_of(" \n\t\r\v\f#&:*") != std::string::npos || std::isdigit(cmd.second[0]))
 	{
 		StaticFunctions::SendToFd(_socket[i], ERR_ERRONEUSNICKNAME((*it)->getNickname(), cmd.second), 0);
 		return	;
@@ -451,7 +450,7 @@ void	Server::setNickname(std::pair<Command, std::string>cmd, int i)
 		StaticFunctions::SendToFd(_socket[i], ERR_NONICKNAMEGIVEN((*usrIt)->getNickname()), 0);
 		return;
 	}
-	if ((*it)->getNickname().size() <= 1)
+	if ((*it)->getNickname() == "*")
 	{
 		(*it)->setNickname(cmd.second);
 		StaticFunctions::SendToFd(_socket[i], "NICK " + (*it)->getNickname(), 0);

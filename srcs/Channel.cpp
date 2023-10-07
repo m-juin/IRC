@@ -197,19 +197,17 @@ void	Channel::updateFlag(std::string cmd, User *op)
 		addFlag(flags[1][1]);
 	else if (flags[1][0] == '-')
 		rmFlag(flags[1][1], op);
-
-	// Check if channel is in o mode
 	if (flags[1][0] == '+' && flags[1][1] == 'o' && !flags[3].empty())
 		addOperator(op, flags[3]);
 	else if (flags[1][0] == '-' && flags[1][1] == 'o' && !flags[3].empty())
 		rmOperator(op, flags[3]);
 	
-	if (flags[1][0] == '+' && flags[1][1] == 'l' && !flags[2].empty()) // limit user
+	if (flags[1][0] == '+' && flags[1][1] == 'l' && !flags[2].empty())
 	{
 		char *end = NULL;
 		long i = std::strtol(flags[2].c_str(), &end, 10);
 		if (end != NULL && i > 1000 && i < 0)
-			StaticFunctions::SendToFd(op->getFd(), "+l need number", 0);
+			StaticFunctions::SendToFd(op->getFd(), ":127.0.0.1 502 " + op->getNickname() + " " + _name + " :+l need number", 0);
 		else
 		{
 			setUserLimit(i);
@@ -222,7 +220,7 @@ void	Channel::updateFlag(std::string cmd, User *op)
 		sendToEveryuser(":" + op->getNickname() + " MODE " + cmd);
 	}
 
-	if (flags[1][0] == '+' && flags[1][1] == 'k' && !flags[2].empty()) // password channel
+	if (flags[1][0] == '+' && flags[1][1] == 'k' && !flags[2].empty())
 	{
 		setPassword(flags[2]);
 		sendToEveryuser(":" + op->getNickname() + " MODE " + cmd);
