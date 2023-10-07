@@ -188,7 +188,7 @@ void	Channel::updateFlag(std::string cmd, User *op)
 	}
 	if (isValidFlag(flags[1][1]) == false)
 	{
-		StaticFunctions::SendToFd(op->getFd(), ERR_UMODEUNKNOWNFLAG, 0);
+		StaticFunctions::SendToFd(op->getFd(), ERR_UMODEUNKNOWNFLAG(op->getNickname()), 0);
 		return ;
 	}
 	if (flags[1][0] == '+')
@@ -239,7 +239,7 @@ void	Channel::rmFlag(char flag, User *op)
 	if (idx != std::string::npos)
 		this->_channelMod.erase(idx, 1);
 	else
-		StaticFunctions::SendToFd(op->getFd(), ERR_UMODEUNKNOWNFLAG, 0);
+		StaticFunctions::SendToFd(op->getFd(), ERR_UMODEUNKNOWNFLAG(op->getNickname()), 0);
 }
 
 void	Channel::addFlag(char flag)

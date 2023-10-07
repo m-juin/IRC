@@ -32,11 +32,11 @@
 #define ERR_INVITEONLYCHAN(nick, channel) (":127.0.0.1 473 " + nick + " " + channel + " :Cannot join channel (+i)")
 #define ERR_BADCHANNELKEY(nick, channel) (":127.0.0.1 475 " + nick + " " + channel + " :Cannot join channel (+k)")
 #define ERR_CHANOPRIVSNEEDED(nick, channel) (":127.0.0.1 482 " + nick + " " + channel + " :You're not channel operator")
-#define ERR_CANTKILLSERVER (nick) (":127.0.0.1 482 * " + nick + " :You cant kill a server!")
-#define ERR_UMODEUNKNOWNFLAG "Unknown MODE flag"
-#define ERR_USERSDONTMATCH "Cant change mode for other users"
+#define ERR_CANTKILLSERVER (nick) (":127.0.0.1 483 " + nick + " :You cant kill a server!")
+#define ERR_UMODEUNKNOWNFLAG(nick) (":127.0.0.1 501 " + nick +  " :Unknown MODE flag")
+#define ERR_USERSDONTMATCH "127.0.0.1 502 :Cant change mode for other users"
 #define ERR_INVALIDKEY(channel) (channel + " :Key is not well-formed")
-#define ERR_ERRONEUSNICKNAME(nick) (":127.0.0.1 432 * " + nick + " :Erroneus nickname")
+#define ERR_ERRONEUSNICKNAME(nick) (":127.0.0.1 432 " + nick + " :Erroneus nickname")
 #define ERR_NICKCOLLISION "Nickname collision KILL"
 
 #endif
