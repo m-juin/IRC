@@ -117,6 +117,8 @@ void		Channel::sendToEveryuserNotHimself(std::string toSend, User *him)
 
 void		Channel::connectToChannel(User *user)
 {
+	if (std::find(this->_users.begin(), this->_users.end(), user) != this->_users.end())
+		return ;
 	user->connectChannel(this->_id);
 	this->_users.push_back(user);
 	std::list<User *>::iterator it = _users.begin();
