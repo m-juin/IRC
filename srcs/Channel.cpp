@@ -287,7 +287,7 @@ void		Channel::leaveUser(User *usr)
 	std::list<User *>::iterator its = find(this->_users.begin(), this->_users.end(), usr);
 	if (its == this->_users.end())
 	{
-		StaticFunctions::SendToFd(usr->getFd(), ERR_NOTONCHANNEL(this->getName()), 0);
+		StaticFunctions::SendToFd(usr->getFd(), ERR_NOTONCHANNEL(usr->getNickname(), _name), 0);
 		return	;
 	}
 	this->_users.erase(its);
@@ -300,7 +300,7 @@ void		Channel::addOperator(User *op, std::string &name)
 	std::list<User *>::iterator its = find(this->_users.begin(), this->_users.end(), name);
 	if (its == _users.end())
 	{
-		StaticFunctions::SendToFd(op->getFd(), ERR_NOTONCHANNEL(this->getName()), 0);
+		StaticFunctions::SendToFd(op->getFd(), ERR_NOTONCHANNEL(op->getNickname(), _name), 0);
 		return	;
 	}
 	(*its)->addFlag(this->_id, 'o');
@@ -313,7 +313,7 @@ void		Channel::rmOperator(User *op, std::string &name)
 	std::list<User *>::iterator its = find(this->_users.begin(), this->_users.end(), name);
 	if (its == _users.end())
 	{
-		StaticFunctions::SendToFd(op->getFd(), ERR_NOTONCHANNEL(this->getName()), 0);
+		StaticFunctions::SendToFd(op->getFd(), ERR_NOTONCHANNEL(op->getNickname(), _name), 0);
 		return	;
 	}
 	op->rmFlag(this->_id, 'o');

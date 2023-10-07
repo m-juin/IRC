@@ -111,12 +111,12 @@ void	User::updateFlag(std::size_t channelID, const std::string flag)
 {
 	if (flag.size() < 2 || flag.size() > 2)
 	{
-		std::cerr << "Invalid flag: " << flag << std::endl;
+		StaticFunctions::SendToFd(_fd, ERR_NEEDMOREPARAMS(flag), 0);
 		return ;
 	}
 	if (isValidFlag(flag[1]) == false)
 	{
-		std::cerr << "User flag error: Invalid flag: \'" << flag[1] << "\'" << std::endl;
+		StaticFunctions::SendToFd(_fd, ERR_UMODEUNKNOWNFLAG(_nickname), 0);
 		return ;
 	}
 	if (flag[0] == '+')
@@ -124,7 +124,7 @@ void	User::updateFlag(std::size_t channelID, const std::string flag)
 	else if (flag[0] == '-')
 		rmFlag(channelID, flag[1]);
 	else
-		std::cerr << "User flag error: Invalid flag sign: \'" << flag[0] << "\'" << std::endl;
+		StaticFunctions::SendToFd(_fd, ERR_UMODEUNKNOWNFLAG(_nickname), 0);
 
 }
 
@@ -133,13 +133,15 @@ bool User::addFlag(std::size_t channelID, char flag)
 	flagsPair::iterator it = getFlagsIndex(channelID);
 	if (it == _channelsFlags.end())
 	{
-		std::cerr << "Error: No perm for channel " << channelID << std::endl;
+		// Shouldn't come here, wrong message anyway
+		//std::cerr << "Error: No perm for channel " << channelID << std::endl;
 		return false; 
 	}
 	std::size_t search = it->second.find(flag, 0);
 	if (search != it->second.npos)
 	{
-		std::cerr << "Error: User already have flag '" << flag << "'!" << std::endl;
+		// Not if we send a message here
+		//std::cerr << "Error: User already have flag '" << flag << "'!" << std::endl;
 		return false; 
 	}
 	it->second += flag;
@@ -151,13 +153,15 @@ bool User::rmFlag(std::size_t channelID, char flag)
 	flagsPair::iterator it = getFlagsIndex(channelID);
 	if (it == _channelsFlags.end())
 	{
-		std::cerr << "Error: No perm for channel " << channelID << std::endl;
+		// Shouldn't come here, wrong message anyway
+		//std::cerr << "Error: No perm for channel " << channelID << std::endl;
 		return false; 
 	}
 	std::size_t search = it->second.find(flag, 0);
 	if (search == it->second.npos)
 	{
-		std::cerr << "Error: User not have flag '" << flag << "'!" << std::endl;
+		// Not if we send a message here
+		//std::cerr << "Error: User not have flag '" << flag << "'!" << std::endl;
 		return false; 
 	}
 	it->second.erase(search, 1);
@@ -198,7 +202,7 @@ void User::disconnectChannel(Channel *chn)
 	flagsPair::iterator it = getFlagsIndex(chn->getId());
 	if ( it == this->_channelsFlags.end() )
 	{
-		std::cerr << "User " << this->_username << " aren't connected to channel " << chn->getName() << "!\n";
+		StaticFunctions::SendToFd(_fd, ERR_NOTONCHANNEL(_nickname, chn->getName()), 0);
 		return ;
 	}
 	chn->leaveUser(this);

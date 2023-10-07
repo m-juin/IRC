@@ -22,7 +22,7 @@
 #define ERR_ERRONEUSNICKNAME(nick, newNick) (":127.0.0.1 432 " + nick + " " + newNick + " :Erroneus nickname")
 #define ERR_NICKNAMEINUSE(nick, newNick) (":127.0.0.1 433 " + nick + " " + newNick + " :Nickname is already in use")
 #define ERR_USERNOTINCHANNEL(nick, channel) (":127.0.0.1 441 * " + nick + " " + channel + " :They aren't on that channel")
-#define ERR_NOTONCHANNEL(channel) (":127.0.0.1 442 " + channel + " :You're not on that channel")
+#define ERR_NOTONCHANNEL(nick, channel) (":127.0.0.1 442 " + nick + " " + channel + " :You're not on that channel")
 #define ERR_USERONCHANNEL(nick, channel) (":127.0.0.1 443 * " + nick + " " + channel + " :is already on channel")
 #define ERR_NOTREGISTERED(nick) (":127.0.0.1 451 " + nick + " :You have not registered")
 #define ERR_NEEDMOREPARAMS(cmd) (":127.0.0.1 461 * " + cmd + " :Not enough parameters")

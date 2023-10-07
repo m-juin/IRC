@@ -207,7 +207,7 @@ void Server::kickUser(std::pair<Command, std::string>cmd, int i)
 	std::list<Channel*>::iterator chan = find(_channels.begin(), _channels.end(), cmdSplit[0]);
 	if (chan == _channels.end())
 	{
-		StaticFunctions::SendToFd(_socket[i], ERR_NOTONCHANNEL(cmdSplit[0]), 0);
+		StaticFunctions::SendToFd(_socket[i], ERR_NOTONCHANNEL((*usrIt)->getNickname(), cmdSplit[0]), 0);
 		return	;
 	}
 	if (cmdSplit[1].size() == 0)
@@ -314,7 +314,10 @@ void Server::leaveChannel(std::pair<Command, std::string>cmd, int i)
 	std::list<User *>::iterator usrIt = StaticFunctions::findByFd(_users, _socket[i]);
 	std::list<Channel *>::iterator it = find(_channels.begin(), _channels.end(), cmdSplit[0]);
 	if (it == _channels.end())
+	{
 		StaticFunctions::SendToFd(_socket[i], ERR_NOSUCHCHANNEL((*usrIt)->getNickname(), cmdSplit[0]), 0);
+		return	;
+	}
 	else
 	{
 		std::string reason;
