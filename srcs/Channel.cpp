@@ -333,6 +333,7 @@ void Channel::inviteUser(User *op, User *target)
 		if (this->isUserOp(op) == true)
 		{
 			StaticFunctions::SendToFd(target->getFd(), RPL_INVITING(target->getNickname(), _name), 0);
+			_invitedUsers.push_back(target);
 			return;
 		}
 		else
