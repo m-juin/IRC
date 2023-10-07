@@ -224,7 +224,7 @@ void	Channel::updateFlag(std::string cmd, User *op)
 
 	if (flags[1][0] == '+' && flags[1][1] == 'k' && !flags[2].empty()) // password channel
 	{
-		setPassword(flags[3]);
+		setPassword(flags[2]);
 		sendToEveryuser(":" + op->getNickname() + " MODE " + cmd);
 	}
 	else if (flags[1][0] == '-' && flags[1][1] == 'k' && !flags[2].empty())

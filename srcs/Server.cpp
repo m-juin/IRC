@@ -65,7 +65,8 @@ void Server::launch()
 				valread = recv(_socket[i], buff, 1024, 0);
 				if (valread == -1)
 				{
-					// Maybe we need to shut the server down, just delete this condition if you think we don't care
+					// Maybe we need to shut the server down, 
+					// just delete this condition if you think we don't care
 				}
 				if (valread == 0)
 				{
@@ -202,22 +203,22 @@ void Server::changeModeChannel(std::pair<Command, std::string>cmd, int i)
 void Server::kickUser(std::pair<Command, std::string>cmd, int i)
 {
 	std::list<User *>::iterator usrIt = StaticFunctions::findByFd(_users, _socket[i]);
-	std::vector<std::string> v = Parser::SplitCmd(cmd.second, " ");
-	std::list<Channel*>::iterator chan = find(_channels.begin(), _channels.end(), v[0]);
+	std::vector<std::string> cmdSplit = Parser::SplitCmd(cmd.second, " ");
+	std::list<Channel*>::iterator chan = find(_channels.begin(), _channels.end(), cmdSplit[0]);
 	if (chan == _channels.end())
 	{
-		StaticFunctions::SendToFd(_socket[i], ERR_NOTONCHANNEL(v[0]), 0);
+		StaticFunctions::SendToFd(_socket[i], ERR_NOTONCHANNEL(cmdSplit[0]), 0);
 		return	;
 	}
-	if (v[1].size() == 0)
+	if (cmdSplit[1].size() == 0)
 	{
 		StaticFunctions::SendToFd(_socket[i], ERR_NEEDMOREPARAMS(static_cast<std::string>("KICK")), 0);
 		return ;	
 	}
-	if (v.size() <= 2)
-		(*chan)->kickUser(*usrIt, v[1], (*usrIt)->getNickname());
+	if (cmdSplit.size() <= 2)
+		(*chan)->kickUser(*usrIt, cmdSplit[1], (*usrIt)->getNickname());
 	else
-		(*chan)->kickUser(*usrIt, v[1], v[2]);
+		(*chan)->kickUser(*usrIt, cmdSplit[1], cmdSplit[2]);
 	if ((*chan)->getUsers().empty())
 		_channels.erase(chan);
 	
@@ -277,19 +278,14 @@ void Server::joinChannel(std::pair<Command, std::string>cmd, int i)
 {
 	if (isUserCorrectlyConnected(i, true) == false)
 		return ;
-	std::vector<std::string> v = Parser::SplitCmd(cmd.second, " ");
+	std::vector<std::string> cmdSplit = Parser::SplitCmd(cmd.second, " ");
 	std::list<User *>::iterator usrIt = StaticFunctions::findByFd(_users, _socket[i]);
-	std::list<Channel *>::iterator it = find(_channels.begin(), _channels.end(), v[0]);
+	std::list<Channel *>::iterator it = find(_channels.begin(), _channels.end(), cmdSplit[0]);
 	if (it != _channels.end())
 	{
-		if (!(*it)->getPassword().empty() && v[1].empty())
+		if (!(*it)->getPassword().empty() && (cmdSplit.size() <= 1 || (*it)->getPassword() != cmdSplit[1]))
 		{
-			StaticFunctions::SendToFd(_socket[i], (*it)->getName() + " need password", 0);
-			return;
-		}
-		if (!(*it)->getPassword().empty() && (*it)->getPassword() != v[1])
-		{
-			StaticFunctions::SendToFd(_socket[i], "Incorrect password", 0);
+			StaticFunctions::SendToFd(_socket[i], ERR_BADCHANNELKEY((*usrIt)->getNickname(),(*it)->getName()), 0);
 			return;
 		}
 		if ((*it)->getUserLimit() == 0)
@@ -302,10 +298,10 @@ void Server::joinChannel(std::pair<Command, std::string>cmd, int i)
 	else if (it == _channels.end())
 	{
 		std::string empty = "";
-		Channel *c = new Channel(_channelNumber, v[0], *usrIt);
+		Channel *c = new Channel(_channelNumber, cmdSplit[0], *usrIt);
 		_channelNumber++;
-		if (v.size() > 1 && !v[1].empty())
-			c->setPassword(v[1]);
+		if (cmdSplit.size() > 1 && !cmdSplit[1].empty())
+			c->setPassword(cmdSplit[1]);
 		else
 			c->setPassword(empty);
 		_channels.push_back(c);
@@ -314,18 +310,18 @@ void Server::joinChannel(std::pair<Command, std::string>cmd, int i)
 
 void Server::leaveChannel(std::pair<Command, std::string>cmd, int i)
 {
-	std::vector<std::string> v = Parser::SplitCmd(cmd.second, " ");
+	std::vector<std::string> cmdSplit = Parser::SplitCmd(cmd.second, " ");
 	std::list<User *>::iterator usrIt = StaticFunctions::findByFd(_users, _socket[i]);
-	std::list<Channel *>::iterator it = find(_channels.begin(), _channels.end(), v[0]);
+	std::list<Channel *>::iterator it = find(_channels.begin(), _channels.end(), cmdSplit[0]);
 	if (it == _channels.end())
-		StaticFunctions::SendToFd(_socket[i], ERR_NOSUCHCHANNEL((*usrIt)->getNickname(), v[0]), 0);
+		StaticFunctions::SendToFd(_socket[i], ERR_NOSUCHCHANNEL((*usrIt)->getNickname(), cmdSplit[0]), 0);
 	else
 	{
 		std::string reason;
-		if (v.size() <= 1)
+		if (cmdSplit.size() <= 1)
 			reason = "Leaving";
 		else
-			reason = v[1];
+			reason = cmdSplit[1];
 		(*it)->sendToEveryuser(":" + (*usrIt)->getNickname() + " PART " + (*it)->getName() + " " + reason);
 		(*usrIt)->disconnectChannel((*it));
 	}
@@ -491,23 +487,23 @@ void	Server::setUsername(std::pair<Command, std::string>cmd, int i)
 
 void	Server::messageChannel(std::pair<Command, std::string>cmd, int i, User *op)
 {
-	std::vector<std::string> v = Parser::SplitCmd(cmd.second, " ");
-	if (v[0][0] != '#')
+	std::vector<std::string> cmdSplit = Parser::SplitCmd(cmd.second, " ");
+	if (cmdSplit[0][0] != '#')
 	{
-		std::list<User *>::iterator it = find(_users.begin(), _users.end(), v[0]);
+		std::list<User *>::iterator it = find(_users.begin(), _users.end(), cmdSplit[0]);
 		if (it == _users.end())
 		{
-			StaticFunctions::SendToFd(_socket[i], ERR_NOSUCHNICK(v[0]), 0);
+			StaticFunctions::SendToFd(_socket[i], ERR_NOSUCHNICK(cmdSplit[0]), 0);
 			return	;
 		}
 		std::string message = ":" + op->getNickname() + " PRIVMSG " + cmd.second + "\r\n";
 		send((*it)->getFd(), message.c_str(), message.size(), 0);
 		return	;
 	}
-	Channel * myChan = getChannel(v[0]);
+	Channel * myChan = getChannel(cmdSplit[0]);
 	if (myChan == NULL)
 	{
-		StaticFunctions::SendToFd(_socket[i], ERR_NOSUCHCHANNEL(op->getNickname(), v[0]), 0);
+		StaticFunctions::SendToFd(_socket[i], ERR_NOSUCHCHANNEL(op->getNickname(), cmdSplit[0]), 0);
 		return ;
 	}
 	myChan->sendToEveryuserNotHimself(":" + op->getNickname() + " PRIVMSG " + cmd.second, op);
@@ -515,12 +511,12 @@ void	Server::messageChannel(std::pair<Command, std::string>cmd, int i, User *op)
 
 void Server::setTopic(std::pair<Command, std::string>cmd, int i)
 {
-	std::vector<std::string> v = Parser::SplitCmd(cmd.second, " ");
+	std::vector<std::string> cmdSplit = Parser::SplitCmd(cmd.second, " ");
 	std::list<User *>::iterator currentUser = StaticFunctions::findByFd(_users, _socket[i]);
-	Channel * myChan = getChannel(v[0]);
+	Channel * myChan = getChannel(cmdSplit[0]);
 	if (myChan == NULL)
 	{
-		StaticFunctions::SendToFd(_socket[i], ERR_NOSUCHCHANNEL((*currentUser)->getNickname(), v[0]), 0);
+		StaticFunctions::SendToFd(_socket[i], ERR_NOSUCHCHANNEL((*currentUser)->getNickname(), cmdSplit[0]), 0);
 		return ;
 	}
 	std::list<User *> usr = myChan->getUsers();
