@@ -34,7 +34,7 @@ class Server {
 		fd_set	addNewSocket();
 
 		bool isUserCorrectlyConnected(int i, bool sendMessage);
-		bool isUserAuthenticated(int i);
+		bool isUserAuthenticated(int i, bool printState);
 
 		void joinChannel(std::pair<Command, std::string>cmd, int i);
 		void checkPass(std::pair<Command, std::string>cmd, int i);

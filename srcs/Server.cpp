@@ -160,7 +160,7 @@ void Server::closeConnexionUser(int i)
 
 void Server::connexionLost(int i)
 {
-	if (isUserAuthenticated(i) == false)
+	if (isUserAuthenticated(i, false) == false)
 	{	
 		closeConnexionUser(i);
 		return	;
@@ -246,12 +246,8 @@ void Server::quitServer(std::pair<Command, std::string>cmd, int i)
 
 void Server::checkPass(std::pair<Command, std::string>cmd, int i)
 {	
-	if (isUserAuthenticated(i) == true)
-	{	
-		// TODO
-		//StaticFunctions::SendToFd(_socket[i], ERR_ALREADYREGISTERED(), 0);
+	if (isUserAuthenticated(i, true) == true)
 		return	;
-	}
 	if (cmd.second == _password)
 	{
 		std::list<User *>::iterator it = _users.end();
@@ -421,20 +417,27 @@ bool	Server::isUserCorrectlyConnected(int i, bool sendMessage)
 	return	true;
 }
 
-bool	Server::isUserAuthenticated(int i)
+bool	Server::isUserAuthenticated(int i, bool printState)
 {
 	std::list<User *>::iterator usrIt = StaticFunctions::findByFd(_users, _socket[i]);
 	if (usrIt == _users.end())
 	{
-		//StaticFunctions::SendToFd(_socket[i], ERR_NOTREGISTERED, 0);
+		if (printState == true)
+			StaticFunctions::SendToFd(_socket[i], ERR_NOTREGISTERED((*usrIt)->getNickname()), 0);
 		return	false;
 	}
-	return	true;
+	else
+	{
+		if (printState == true)
+			StaticFunctions::SendToFd(_socket[i], ERR_ALREADYREGISTERED((*usrIt)->getNickname()), 0);
+		return	true;
+	}
+	
 }
 
 void	Server::setNickname(std::pair<Command, std::string>cmd, int i)
 {
-	if (isUserAuthenticated(i) == false)
+	if (isUserAuthenticated(i, true) == false)
 		return	;
 	std::list<User *>::iterator it = StaticFunctions::findByFd(_users, _socket[i]);
 	if (cmd.second.size() <= 1 || cmd.second.find_first_of(" \n\t\r\v\f#&:") != std::string::npos)
@@ -469,7 +472,7 @@ void	Server::setNickname(std::pair<Command, std::string>cmd, int i)
 
 void	Server::setUsername(std::pair<Command, std::string>cmd, int i)
 {
-	if (isUserAuthenticated(i) == false)
+	if (isUserAuthenticated(i, true) == false)
 		return;
 	std::list<User *>::iterator it = StaticFunctions::findByFd(_users, _socket[i]);
 	if ((*it)->getUsername().size() != 0)
