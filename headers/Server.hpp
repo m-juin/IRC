@@ -51,6 +51,8 @@ class Server {
 		void messageChannel(std::pair<Command, std::string>cmd, int i, User *op);
 		void leaveChannel(std::pair<Command, std::string>cmd, int i);
 
+		void closeConnexionUser(int i);
+
 	private:
 		std::map<int, std::string>	_buffers;
         std::list<Channel*>			_channels;

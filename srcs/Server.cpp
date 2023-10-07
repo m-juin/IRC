@@ -63,7 +63,11 @@ void Server::launch()
 			if (_socket[i] > 0 && FD_ISSET(_socket[i], &rfds))
 			{
 				valread = recv(_socket[i], buff, 1024, 0);
-				if (valread <= 0)
+				if (valread == -1)
+				{
+					// Maybe we need to shut the server down, just delete this condition if you think we don't care
+				}
+				if (valread == 0)
 				{
 					connexionLost(i);
 					continue ;
@@ -142,16 +146,23 @@ void Server::launch()
 						break;
 				}
 			}
+			delete Parsedcmd;
 		}	
 	}	
+}
+
+void Server::closeConnexionUser(int i)
+{
+	_buffers[_socket[i]].clear();
+	close(_socket[i]);
+	_socket[i] = -1;
 }
 
 void Server::connexionLost(int i)
 {
 	if (isUserAuthenticated(i) == false)
 	{	
-		close(_socket[i]);
-		_socket[i] = -1;
+		closeConnexionUser(i);
 		return	;
 	}
 	std::list<User *>::iterator usrIt = StaticFunctions::findByFd(_users, _socket[i]);
@@ -161,8 +172,7 @@ void Server::connexionLost(int i)
 		std::list<Channel *>::iterator chan = StaticFunctions::findChannelById(_channels, id);
 		if (chan == _channels.end())
 		{
-			close(_socket[i]);
-			_socket[i] = -1;
+			closeConnexionUser(i);
 			return	;
 		}
 		(*chan)->sendToEveryuser(":" + (*usrIt)->getNickname() + " QUIT :Connexion Lost");
@@ -171,8 +181,7 @@ void Server::connexionLost(int i)
 			_channels.erase(chan);
 	}
 	_users.erase(usrIt);
-	close(_socket[i]);
-	_socket[i] = -1;
+	closeConnexionUser(i);
 }
 
 void Server::changeModeChannel(std::pair<Command, std::string>cmd, int i)
@@ -187,6 +196,8 @@ void Server::changeModeChannel(std::pair<Command, std::string>cmd, int i)
 	}
 	(*it)->updateFlag(cmd.second, *usrIt);
 }
+
+
 
 void Server::kickUser(std::pair<Command, std::string>cmd, int i)
 {
@@ -221,8 +232,7 @@ void Server::quitServer(std::pair<Command, std::string>cmd, int i)
 		std::list<Channel *>::iterator chan = StaticFunctions::findChannelById(_channels, id);
 		if (chan == _channels.end())
 		{
-			close(_socket[i]);
-			_socket[i] = -1;
+			closeConnexionUser(i);
 			return	;
 		}
 		(*chan)->sendToEveryuser(":" + (*usrIt)->getNickname() + " QUIT :" + cmd.second);
@@ -231,8 +241,7 @@ void Server::quitServer(std::pair<Command, std::string>cmd, int i)
 			_channels.erase(chan);
 	}
 	_users.erase(usrIt);
-	close(_socket[i]);
-	_socket[i] = -1;
+	closeConnexionUser(i);
 }
 
 void Server::checkPass(std::pair<Command, std::string>cmd, int i)
