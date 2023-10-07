@@ -26,9 +26,9 @@ std::list<Channel *>::iterator StaticFunctions::findChannelById(std::list<Channe
 	return	ite;
 }
 
-void StaticFunctions::SendToFd(int fd, std::string str, std::string str2, int flag)
+void StaticFunctions::SendToFd(int fd, std::string str, int flag)
 {
-	std::string toSend = str + str2 + "\r\n";
+	std::string toSend = str + "\r\n";
 	send(fd, toSend.c_str(), toSend.length(), flag);
 }
 

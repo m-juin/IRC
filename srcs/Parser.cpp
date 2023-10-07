@@ -55,7 +55,7 @@ Parser::Parser(std::list<User *> usrs, int fd, std::string fullCmd)
 			std::size_t pos = (*i).find_first_of(' ');
 			if (pos == std::string::npos)
 			{
-				StaticFunctions::SendToFd(fd, ERR_NEEDMOREPARAMS(words[0]), "", 0);
+				StaticFunctions::SendToFd(fd, ERR_NEEDMOREPARAMS(words[0]), 0);
 				return;
 			}
 			_args.push_back(std::make_pair(cmd, (*i).substr(pos)));
