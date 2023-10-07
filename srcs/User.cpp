@@ -218,11 +218,7 @@ bool User::operator==(User const &src)
 
 bool operator==(User const * src, std::string const &name)
 {
-	if (src->getUsername() == name)
-		return true;
-	if (src->getNickname() == name)
-		return true;
-	return false;
+	return src->getNickname() == name;
 }
 
 User & User::operator=(User const & user)
