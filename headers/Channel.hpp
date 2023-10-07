@@ -41,7 +41,7 @@ class Channel {
 		void	connectToChannel(User *user);
 		
 		void	rmFlag(char flag, User *op);
-		void	kickUser(User *op, std::string &name);
+		void	kickUser(User *op, std::string &name, std::string reason);
 		void	rmOperator(User *op, std::string &name);
 
 		void	leaveUser(User *usr);
