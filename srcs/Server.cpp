@@ -246,8 +246,15 @@ void Server::quitServer(std::pair<Command, std::string>cmd, int i)
 
 void Server::checkPass(std::pair<Command, std::string>cmd, int i)
 {	
-	if (isUserAuthenticated(i, true) == true)
+	if (isUserAuthenticated(i, false) == true)
+	{
+		std::list<User *>::iterator usrIt = StaticFunctions::findByFd(_users, _socket[i]);
+		if (usrIt != _users.end())
+			StaticFunctions::SendToFd(_socket[i], ERR_ALREADYREGISTERED((*usrIt)->getNickname()), 0);
+		else
+			StaticFunctions::SendToFd(_socket[i], ERR_ALREADYREGISTERED(static_cast<std::string>("*")), 0);
 		return	;
+	}
 	if (cmd.second == _password)
 	{
 		std::list<User *>::iterator it = _users.end();
@@ -406,12 +413,10 @@ Channel * Server::getChannel(std::string name)
 bool	Server::isUserCorrectlyConnected(int i, bool sendMessage)
 {
 	std::list<User *>::iterator usrIt = StaticFunctions::findByFd(_users, _socket[i]);
-	if (usrIt == _users.end() || (*usrIt)->getUsername().size() == 0 || (*usrIt)->getNickname().size() == 0)
+	if (usrIt == _users.end() || (*usrIt)->getUsername().size() == 0 || (*usrIt)->getNickname().size() <= 1)
 	{
 		if(sendMessage == true)
-		{
 			StaticFunctions::SendToFd(_socket[i], ERR_NOTREGISTERED((*usrIt)->getNickname()), 0);
-		}
 		return	false;
 	}
 	return	true;
@@ -426,13 +431,7 @@ bool	Server::isUserAuthenticated(int i, bool printState)
 			StaticFunctions::SendToFd(_socket[i], ERR_NOTREGISTERED((*usrIt)->getNickname()), 0);
 		return	false;
 	}
-	else
-	{
-		if (printState == true)
-			StaticFunctions::SendToFd(_socket[i], ERR_ALREADYREGISTERED((*usrIt)->getNickname()), 0);
-		return	true;
-	}
-	
+	return	true;
 }
 
 void	Server::setNickname(std::pair<Command, std::string>cmd, int i)
@@ -456,7 +455,7 @@ void	Server::setNickname(std::pair<Command, std::string>cmd, int i)
 		StaticFunctions::SendToFd(_socket[i], ERR_NONICKNAMEGIVEN((*usrIt)->getNickname()), 0);
 		return;
 	}
-	if ((*it)->getNickname().empty())
+	if ((*it)->getNickname().size() <= 1)
 	{
 		(*it)->setNickname(cmd.second);
 		StaticFunctions::SendToFd(_socket[i], "NICK " + (*it)->getNickname(), 0);
