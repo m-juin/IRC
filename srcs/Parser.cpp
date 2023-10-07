@@ -16,6 +16,7 @@ Command getCmdEnum(std::string arg)
 
 Parser::Parser(std::list<User *> usrs, int fd, std::string fullCmd)
 {
+	std::cout << fullCmd << "---" << std::endl;
 	std::vector<std::string> lines;
 	if (fullCmd[fullCmd.size() - 1] == '\r')
 		fullCmd = fullCmd.substr(0, fullCmd.size() - 2);
