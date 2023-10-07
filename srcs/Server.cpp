@@ -64,7 +64,10 @@ void Server::launch()
 			{
 				valread = recv(_socket[i], buff, 1024, 0);
 				if (valread <= 0)
+				{
+					connexionLost(i);
 					continue ;
+				}
 				Parsedcmd = new Parser(_users, _socket[i], buff);
 				std::memset(buff, 0, 1024);
 			}
@@ -133,6 +136,29 @@ void Server::launch()
 	}	
 }
 
+void Server::connexionLost(int i)
+{
+	if (isUserAuthenticated(i) == false)
+	{	
+		close(_socket[i]);
+		_socket[i] = -1;
+		return	;
+	}
+	std::list<User *>::iterator usrIt = StaticFunctions::findByFd(_users, _socket[i]);
+	for(std::size_t nbChan = 0; nbChan < (*usrIt)->getNbChannel(); nbChan++)
+	{
+		std::size_t id = (*usrIt)->getChanId(nbChan);
+		std::list<Channel *>::iterator chan = StaticFunctions::findChannelById(_channels, id);
+		(*chan)->sendToEveryuser(":" + (*usrIt)->getNickname() + " QUIT :Connexion Lost");
+		(*chan)->leaveUser(*usrIt);
+		if ((*chan)->getUsers().empty())
+			_channels.erase(chan);
+	}
+	_users.erase(usrIt);
+	close(_socket[i]);
+	_socket[i] = -1;
+}
+
 void Server::changeModeChannel(std::pair<Command, std::string>cmd, int i)
 {
 	std::list<User *>::iterator usrIt = StaticFunctions::findByFd(_users, _socket[i]);
@@ -174,7 +200,7 @@ void Server::quitServer(std::pair<Command, std::string>cmd, int i)
 	{
 		std::size_t id = (*usrIt)->getChanId(nbChan);
 		std::list<Channel *>::iterator chan = StaticFunctions::findChannelById(_channels, id);
-		(*chan)->sendToEveryuser(":" + (*usrIt)->getNickname() + " QUIT \"" + cmd.second);
+		(*chan)->sendToEveryuser(":" + (*usrIt)->getNickname() + " QUIT :" + cmd.second);
 		(*chan)->leaveUser(*usrIt);
 		if ((*chan)->getUsers().empty())
 			_channels.erase(chan);
@@ -278,7 +304,10 @@ fd_set Server::addNewSocket()
 	switch (select(FD_SETSIZE,  &rfds, NULL, NULL, NULL))
 	{
 		case 0:
+		{
+			std::cout << "hey" << std::endl;
 			break ;
+		}
 		case -1:
 		{
 			std::cout << "Error select" << std::endl;

@@ -40,6 +40,8 @@ class Server {
 		void quitServer(std::pair<Command, std::string>cmd, int i);
 		void changeModeChannel(std::pair<Command, std::string>cmd, int i);
 
+		void connexionLost(int i);
+
 		void setTopic(std::pair<Command, std::string>cmd, int i);
 		void setNickname(std::pair<Command, std::string>cmd, int i);
 		void setUsername(std::pair<Command, std::string>cmd, int i);
