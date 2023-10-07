@@ -149,6 +149,12 @@ void Server::connexionLost(int i)
 	{
 		std::size_t id = (*usrIt)->getChanId(nbChan);
 		std::list<Channel *>::iterator chan = StaticFunctions::findChannelById(_channels, id);
+		if (chan == _channels.end())
+		{
+			close(_socket[i]);
+			_socket[i] = -1;
+			return	;
+		}
 		(*chan)->sendToEveryuser(":" + (*usrIt)->getNickname() + " QUIT :Connexion Lost");
 		(*chan)->leaveUser(*usrIt);
 		if ((*chan)->getUsers().empty())
@@ -200,6 +206,12 @@ void Server::quitServer(std::pair<Command, std::string>cmd, int i)
 	{
 		std::size_t id = (*usrIt)->getChanId(nbChan);
 		std::list<Channel *>::iterator chan = StaticFunctions::findChannelById(_channels, id);
+		if (chan == _channels.end())
+		{
+			close(_socket[i]);
+			_socket[i] = -1;
+			return	;
+		}
 		(*chan)->sendToEveryuser(":" + (*usrIt)->getNickname() + " QUIT :" + cmd.second);
 		(*chan)->leaveUser(*usrIt);
 		if ((*chan)->getUsers().empty())
@@ -304,10 +316,7 @@ fd_set Server::addNewSocket()
 	switch (select(FD_SETSIZE,  &rfds, NULL, NULL, NULL))
 	{
 		case 0:
-		{
-			std::cout << "hey" << std::endl;
 			break ;
-		}
 		case -1:
 		{
 			std::cout << "Error select" << std::endl;
