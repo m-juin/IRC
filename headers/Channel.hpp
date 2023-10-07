@@ -35,6 +35,7 @@ class Channel {
 		void	setTopic(std::string &topic);
 
 		void	updateFlag(std::string cmd, User *op);
+
 		void	addFlag(char flag);
 		void	addUser(User *user);
 		void	addOperator(User *op, std::string &name);
@@ -43,7 +44,7 @@ class Channel {
 		void	rmFlag(char flag, User *op);
 		void	kickUser(User *op, std::string &name, std::string reason);
 		void	rmOperator(User *op, std::string &name);
-
+		void	inviteUser(User *op, User *target);
 		void	leaveUser(User *usr);
 		void	changeTopic(User *usr, std::string newTopic);
 		void	changeUserLimit(User *op, std::size_t limit);
@@ -52,6 +53,7 @@ class Channel {
 		void	sendToEveryuserNotHimself(std::string toSend, User *him);
 
 		bool	isUserOp(User *op);
+		bool	isFlagPresent(char flag);
 		
 	private:
 		std::size_t		_id;

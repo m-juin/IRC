@@ -143,6 +143,12 @@ void Server::launch()
 						break;
 					}
 
+					case INVITE:
+					{
+						inviteUser(Parsedcmd->getArgs()[j], i ,Parsedcmd->getOperator());
+						break;
+					}
+
 					default:
 						break;
 				}
@@ -509,6 +515,29 @@ void	Server::messageChannel(std::pair<Command, std::string>cmd, int i, User *op)
 		return ;
 	}
 	myChan->sendToEveryuserNotHimself(":" + op->getNickname() + " PRIVMSG " + cmd.second, op);
+}
+
+void Server::inviteUser(std::pair<Command, std::string> cmd, int i, User *op)
+{
+	std::vector<std::string> cmdSplit = Parser::SplitCmd(cmd.second, " ");
+	if (cmdSplit.size() < 2)
+	{
+		StaticFunctions::SendToFd(_socket[i], ERR_NEEDMOREPARAMS(static_cast<std::string>("INVITE")), 0);
+		return ;
+	}
+	std::list<User *>::iterator it = find(_users.begin(), _users.end(), cmdSplit[1]);
+	if (it == _users.end())
+	{
+		StaticFunctions::SendToFd(_socket[i], ERR_NOSUCHNICK(cmdSplit[1]), 0);
+		return	;
+	}
+	Channel * myChan = getChannel(cmdSplit[0]);
+	if (myChan == NULL)
+	{
+		StaticFunctions::SendToFd(_socket[i], RPL_INVITING(cmdSplit[1], cmdSplit[0]), 0);
+		return ;
+	}
+	myChan->inviteUser(op, *it);
 }
 
 void Server::setTopic(std::pair<Command, std::string>cmd, int i)

@@ -160,9 +160,16 @@ bool	Channel::isUserOp(User *op)
 	if (op->getFlags(this->_id).find('o') == std::string::npos)
 	{
 		StaticFunctions::SendToFd(op->getFd(), ERR_CHANOPRIVSNEEDED(op->getNickname(), _name), 0);
-		return	false;
+		return false;
 	}
-	return	true;
+	return true;
+}
+
+bool Channel::isFlagPresent(char flag)
+{
+	if (_channelMod.find(flag) == _channelMod.npos)
+		return false;
+	return true;
 }
 
 static bool	isValidFlag(const char c)
@@ -317,6 +324,22 @@ void		Channel::rmOperator(User *op, std::string &name)
 		return	;
 	}
 	op->rmFlag(this->_id, 'o');
+}
+
+void Channel::inviteUser(User *op, User *target)
+{
+	if (this->isFlagPresent('i') == true)
+	{
+		if (this->isUserOp(op) == true)
+		{
+			StaticFunctions::SendToFd(target->getFd(), RPL_INVITING(target->getNickname(), _name), 0);
+			return;
+		}
+		else
+		{
+			StaticFunctions::SendToFd(op->getFd(), ERR_CHANOPRIVSNEEDED(op->getNickname(), _name), 0);
+		}
+	}
 }
 
 bool Channel::operator==(Channel const & src)
