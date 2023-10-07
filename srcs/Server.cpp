@@ -191,9 +191,12 @@ void Server::kickUser(std::pair<Command, std::string>cmd, int i)
 	if (v[1].size() == 0)
 	{
 		StaticFunctions::SendToFd(_socket[i], ERR_NEEDMOREPARAMS(static_cast<std::string>("KICK")), 0);
-		return	;
+		return ;	
 	}
-	(*chan)->kickUser(*usrIt, v[1]);
+	if (v.size() <= 1)
+		(*chan)->kickUser(*usrIt, v[1], (*usrIt)->getNickname());
+	else
+		(*chan)->kickUser(*usrIt, v[1], v[2]);
 	if ((*chan)->getUsers().empty())
 		_channels.erase(chan);
 	

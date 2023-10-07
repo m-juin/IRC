@@ -270,7 +270,7 @@ void	Channel::changeTopic(User *usr, std::string newTopic)
 	this->_topic = newTopic;
 }
 
-void		Channel::kickUser(User *op, std::string &name)
+void		Channel::kickUser(User *op, std::string &name, std::string reason)
 {
 	std::list<User *>::iterator its = find(this->_users.begin(), this->_users.end(), name);
 	if (its == _users.end())
@@ -280,7 +280,7 @@ void		Channel::kickUser(User *op, std::string &name)
 	}
 	if (isUserOp(op) == false)
 			return	;
-	sendToEveryuser(":" + op->getNickname() + " KICK " + getName() + " " + name);
+	sendToEveryuser(":" + op->getNickname() + " KICK " + getName() + " " + name + " :" + reason);
 	(*its)->disconnectChannel(this);
 }
 

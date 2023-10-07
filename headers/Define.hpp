@@ -19,7 +19,8 @@
 #define ERR_NOTEXTTOSEND ":127.0.0.1 412 * :No text to send"
 #define ERR_UNKNOWNCOMMAND(cmd) (":127.0.0.1 421 * " + cmd + " :Unknown command")
 #define ERR_NONICKNAMEGIVEN ":127.0.0.1 431 * :No nickname given"
-#define ERR_NICKNAMEINUSE(nick) ("127.0.0.1 433 * " + nick + " :Nickname is already in use")
+#define ERR_ERRONEUSNICKNAME(nick) (":127.0.0.1 432 * " + nick + " :Erroneus nickname")
+#define ERR_NICKNAMEINUSE(nick) (":127.0.0.1 433 * " + nick + " :Nickname is already in use")
 #define ERR_USERNOTINCHANNEL(nick, channel) (":127.0.0.1 441 * " + nick + " " + channel + " :They aren't on that channel")
 #define ERR_NOTONCHANNEL(channel) (":127.0.0.1 442 " + channel + " :You're not on that channel")
 #define ERR_USERONCHANNEL(nick, channel) (":127.0.0.1 443 * " + nick + " " + channel + " :is already on channel")
@@ -34,9 +35,8 @@
 #define ERR_CHANOPRIVSNEEDED(nick, channel) (":127.0.0.1 482 " + nick + " " + channel + " :You're not channel operator")
 #define ERR_CANTKILLSERVER (nick) (":127.0.0.1 483 " + nick + " :You cant kill a server!")
 #define ERR_UMODEUNKNOWNFLAG(nick) (":127.0.0.1 501 " + nick +  " :Unknown MODE flag")
-#define ERR_USERSDONTMATCH "127.0.0.1 502 :Cant change mode for other users"
+#define ERR_USERSDONTMATCH ":127.0.0.1 502 :Cant change mode for other users"
 #define ERR_INVALIDKEY(channel) (channel + " :Key is not well-formed")
-#define ERR_ERRONEUSNICKNAME(nick) (":127.0.0.1 432 " + nick + " :Erroneus nickname")
 #define ERR_NICKCOLLISION "Nickname collision KILL"
 
 #endif
