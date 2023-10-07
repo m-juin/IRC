@@ -68,8 +68,18 @@ void Server::launch()
 					connexionLost(i);
 					continue ;
 				}
-				Parsedcmd = new Parser(_users, _socket[i], buff);
-				std::memset(buff, 0, 1024);
+				_buffers[_socket[i]] += buff;
+				if ((_buffers[_socket[i]][_buffers[_socket[i]].size() - 1] == '\r') || _buffers[_socket[i]][_buffers[_socket[i]].size() - 1] == '\n')
+				{
+					Parsedcmd = new Parser(_users, _socket[i], _buffers[_socket[i]]);
+					_buffers[_socket[i]] = "";
+					std::memset(buff, 0, 1024);
+				}
+				else
+				{
+					std::memset(buff, 0, 1024);
+					continue;
+				}
 			}
 			else
 				continue ;
@@ -252,7 +262,7 @@ void Server::checkPass(std::pair<Command, std::string>cmd, int i)
 
 void Server::joinChannel(std::pair<Command, std::string>cmd, int i)
 {
-	if (isUserCorrectlyConnected(i) == false)
+	if (isUserCorrectlyConnected(i, true) == false)
 		return ;
 	std::vector<std::string> v = Parser::SplitCmd(cmd.second, " ");
 	std::list<User *>::iterator usrIt = StaticFunctions::findByFd(_users, _socket[i]);
@@ -382,22 +392,25 @@ Channel * Server::getChannel(std::string name)
 	return (NULL);
 }
 
-bool	Server::isUserCorrectlyConnected(int i)
+bool	Server::isUserCorrectlyConnected(int i, bool sendMessage)
 {
 	std::list<User *>::iterator usrIt = StaticFunctions::findByFd(_users, _socket[i]);
 	if (usrIt == _users.end())
 	{
-		StaticFunctions::SendToFd(_socket[i], ERR_NOTREGISTERED, 0);
+		if(sendMessage == true)
+			StaticFunctions::SendToFd(_socket[i], ERR_NOTREGISTERED, 0);
 		return	false;
 	}
 	if ((*usrIt)->getUsername().size() == 0)
 	{
-		StaticFunctions::SendToFd(_socket[i], "You didn't set your username", 0);
+		if(sendMessage == true)
+			StaticFunctions::SendToFd(_socket[i], "You didn't set your username", 0);
 		return	false;
 	}
 	if ((*usrIt)->getNickname().size() == 0)
 	{
-		StaticFunctions::SendToFd(_socket[i], ERR_NONICKNAMEGIVEN, 0);
+		if(sendMessage == true)
+			StaticFunctions::SendToFd(_socket[i], ERR_NONICKNAMEGIVEN, 0);
 		return	false;
 	}
 	return	true;
@@ -424,7 +437,15 @@ void	Server::setNickname(std::pair<Command, std::string>cmd, int i)
 		StaticFunctions::SendToFd(_socket[i], ERR_ERRONEUSNICKNAME(cmd.second), 0);
 		return	;
 	}
-	std::list<User *>::iterator usrIt = find(_users.begin(), _users.end(), cmd.second);
+	//std::list<User *>::iterator usrIt = find(_users.begin(), _users.end(), cmd.second);
+	std::list<User *>::iterator usrIt = _users.begin();
+	while (usrIt != _users.end())
+	{
+		if ((*usrIt)->getNickname() == cmd.second)
+			break	;
+		usrIt++;
+	}
+	
 	if (usrIt != _users.end())
 	{
 		StaticFunctions::SendToFd(_socket[i], ERR_NICKNAMEINUSE(cmd.second), 0);
@@ -439,10 +460,14 @@ void	Server::setNickname(std::pair<Command, std::string>cmd, int i)
 	{
 		(*it)->setNickname(cmd.second);
 		StaticFunctions::SendToFd(_socket[i], "NICK " + (*it)->getNickname(), 0);
+		if(isUserCorrectlyConnected(i, false) == true)
+			StaticFunctions::SendToFd(_socket[i], RPL_WELCOME((std::string)">ALL", (*it)->getNickname()), 0);
 		return ;
 	}
 	StaticFunctions::SendToFd(_socket[i], ":" + (*it)->getNickname() + " NICK " + cmd.second, 0);
 	(*it)->setNickname(cmd.second);
+	if(isUserCorrectlyConnected(i, false) == true)
+		StaticFunctions::SendToFd(_socket[i], RPL_WELCOME((std::string)">ALL", (*it)->getNickname()), 0);
 }
 
 void	Server::setUsername(std::pair<Command, std::string>cmd, int i)
@@ -455,18 +480,14 @@ void	Server::setUsername(std::pair<Command, std::string>cmd, int i)
 		StaticFunctions::SendToFd(_socket[i], ERR_ALREADYREGISTERED, 0);
 		return;
 	}
-	if ((*it)->getNickname().size() == 0)
-	{
-		StaticFunctions::SendToFd(_socket[i], ERR_NONICKNAMEGIVEN, 0);
-		return;
-	}
 	if (cmd.second.size() == 0)
 	{
 		StaticFunctions::SendToFd(_socket[i], ERR_NEEDMOREPARAMS(static_cast<std::string>("USER")), 0);
 		return;
 	}
 	(*it)->setUsername(cmd.second);
-	StaticFunctions::SendToFd(_socket[i], RPL_WELCOME((std::string)">ALL", (*it)->getNickname()), 0);
+	if(isUserCorrectlyConnected(i, false) == true)
+		StaticFunctions::SendToFd(_socket[i], RPL_WELCOME((std::string)">ALL", (*it)->getNickname()), 0);
 }
 
 void	Server::messageChannel(std::pair<Command, std::string>cmd, int i, User *op)

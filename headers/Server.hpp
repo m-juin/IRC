@@ -5,6 +5,7 @@
 #include <unistd.h>
 #include <cstring>
 #include <vector>
+#include <map>
 #include "Parser.hpp"
 #include "Define.hpp"
 
@@ -32,7 +33,7 @@ class Server {
 		void	closeAllSocket();
 		fd_set	addNewSocket();
 
-		bool isUserCorrectlyConnected(int i);
+		bool isUserCorrectlyConnected(int i, bool sendMessage);
 		bool isUserAuthenticated(int i);
 
 		void joinChannel(std::pair<Command, std::string>cmd, int i);
@@ -51,14 +52,15 @@ class Server {
 		void leaveChannel(std::pair<Command, std::string>cmd, int i);
 
 	private:
-        std::list<Channel*>		_channels;
-		std::list<User *>		_users;
-		std::size_t				_port;
-		std::string				_password;
-		struct sockaddr_in		_address;
-		int						_serverFd;
-		std::vector<int>		_socket;
-		std::size_t				_channelNumber;
+		std::map<int, std::string>	_buffers;
+        std::list<Channel*>			_channels;
+		std::list<User *>			_users;
+		std::size_t					_port;
+		std::string					_password;
+		struct sockaddr_in			_address;
+		int							_serverFd;
+		std::vector<int>			_socket;
+		std::size_t					_channelNumber;
 };
 
 
