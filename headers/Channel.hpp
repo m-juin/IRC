@@ -35,15 +35,17 @@ class Channel {
 		void	setTopic(std::string &topic);
 
 		void	updateFlag(std::string cmd, User *op);
+		void	updatePassword(std::string password, int sign);
+		void	updateUserLimit(std::string limit, int sign);
 
 		void	addFlag(char flag);
 		void	addUser(User *user);
-		void	addOperator(User *op, std::string &name);
+		void	addOperator(User *op, std::string name);
 		void	connectToChannel(User *user);
 		
 		void	rmFlag(char flag, User *op);
 		void	kickUser(User *op, std::string &name, std::string reason);
-		void	rmOperator(User *op, std::string &name);
+		void	rmOperator(User *op, std::string name);
 		void	inviteUser(User *op, User *target);
 		void	leaveUser(User *usr);
 		void	changeTopic(User *usr, std::string newTopic);

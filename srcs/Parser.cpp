@@ -39,7 +39,7 @@ Parser::Parser(std::list<User *> usrs, int fd, std::string fullCmd)
 				channels = SplitCmd(words[1], ",");
 			else
 			{
-				std::cerr << "/JOIN Error: need at least one channel to join\n";
+				//std::cerr << "/JOIN Error: need at least one channel to join\n";
 				return ;
 			}
 			if (words.size() > 2)
@@ -85,7 +85,7 @@ Parser::Parser(std::list<User *> usrs, int fd, std::string fullCmd)
 	std::list<User *>::iterator usrIt = StaticFunctions::findByFd(usrs, fd);
 	if (usrIt == usrs.end())
 	{
-		std::cerr << "Unknown user fd: \"" << fd << "\"\n";
+		//std::cerr << "Unknown user fd: \"" << fd << "\"\n";
 		return;
 	}
 	_op = *usrIt;

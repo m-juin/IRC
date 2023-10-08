@@ -109,7 +109,7 @@ static bool	isValidFlag(const char c)
 
 void	User::updateFlag(std::size_t channelID, const std::string flag)
 {
-	if (flag.size() < 2 || flag.size() > 2)
+	if (flag.size() < 1 || flag.size() > 2)
 	{
 		StaticFunctions::SendToFd(_fd, ERR_NEEDMOREPARAMS(flag), 0);
 		return ;

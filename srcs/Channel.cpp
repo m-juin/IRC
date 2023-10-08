@@ -174,10 +174,47 @@ bool Channel::isFlagPresent(char flag)
 
 static bool	isValidFlag(const char c)
 {
-	const std::string validFlag = "pitlk";
+	const std::string validFlag = "pit";
 	if (validFlag.find(c) != validFlag.npos)
 		return true;
 	return false;
+}
+
+void Channel::updateUserLimit(std::string cmd, int sign)
+{
+	if (sign == 1)
+	{
+		char *end = NULL;
+		long i = std::strtol(cmd.c_str(), &end, 10);
+		if (end != NULL && i > 1000 && i < 0)
+			return	;
+			/*StaticFunctions::SendToFd(op->getFd(), ":127.0.0.1 502 " + op->getNickname() + " " + _name + " :+l need number", 0);*/
+		else
+		{
+			setUserLimit(i);
+			//sendToEveryuser(":" + op->getNickname() + " MODE " + cmd);
+		}
+	}
+	else
+	{
+		setUserLimit(0);
+		//sendToEveryuser(":" + op->getNickname() + " MODE " + cmd);
+	}
+}
+
+void Channel::updatePassword(std::string cmd, int sign)
+{
+	if (sign == 1)
+	{
+		setPassword(cmd);
+		//sendToEveryuser(":" + op->getNickname() + " MODE " + cmd);
+	}
+	else if (sign == 2)
+	{
+		std::string empty = "";
+		setPassword(empty);
+		//sendToEveryuser(":" + op->getNickname() + " MODE " + cmd);
+	}
 }
 
 void	Channel::updateFlag(std::string cmd, User *op)
@@ -185,59 +222,71 @@ void	Channel::updateFlag(std::string cmd, User *op)
 	std::vector<std::string> flags = Parser::SplitCmd(cmd, " ");
 	if (flags.size() < 2)
 	{
-		StaticFunctions::SendToFd(op->getFd(), ERR_NEEDMOREPARAMS(flags[0]), 0);
 		return ;
 	}
 	if (isUserOp(op) == false)
 		return ;
-	if (!flags[1].empty() && flags[1].size() != 2)
-	{
-		StaticFunctions::SendToFd(op->getFd(), ERR_NEEDMOREPARAMS(flags[1]), 0);
-		return;
-	}
-	if (isValidFlag(flags[1][1]) == false)
+	std::size_t i = 1;
+	std::size_t	param = 2;
+	int	sign = 0;
+	std::string toSend = flags[0] + " " + flags[1][0];
+	if (flags[1][0] != '+' && flags[1][0] != '-')
 	{
 		StaticFunctions::SendToFd(op->getFd(), ERR_UMODEUNKNOWNFLAG(op->getNickname()), 0);
-		return ;
+		return	;
 	}
 	if (flags[1][0] == '+')
-		addFlag(flags[1][1]);
+		sign = 1;
 	else if (flags[1][0] == '-')
-		rmFlag(flags[1][1], op);
-	if (flags[1][0] == '+' && flags[1][1] == 'o' && !flags[2].empty())
-		addOperator(op, flags[2]);
-	else if (flags[1][0] == '-' && flags[1][1] == 'o' && !flags[2].empty())
-		rmOperator(op, flags[2]);
-	
-	if (flags[1][0] == '+' && flags[1][1] == 'l' && !flags[2].empty())
+		sign = 2;
+	for (;i < flags[1].size();i++)
 	{
-		char *end = NULL;
-		long i = std::strtol(flags[2].c_str(), &end, 10);
-		if (end != NULL && i > 1000 && i < 0)
-			StaticFunctions::SendToFd(op->getFd(), ":127.0.0.1 502 " + op->getNickname() + " " + _name + " :+l need number", 0);
+		if (param > flags.size())
+			return	;
+		if (flags[1][i] == 'o')
+		{
+			if (sign == 1)
+				addOperator(op, flags[param]);
+			else 
+				rmOperator(op, flags[param]);
+			param++;
+		}
+		else if (flags[1][i] == 'k')
+		{
+			updatePassword(flags[param], sign);
+			param++;
+			if (sign == 2)
+				rmFlag(flags[1][i], op);
+			else 
+				addFlag(flags[1][i]);
+		}
+		else if (flags[1][i] == 'l')
+		{
+			updateUserLimit(flags[param], sign);
+			param++;
+			if (sign == 2)
+				rmFlag(flags[1][i], op);
+			else 
+				addFlag(flags[1][i]);
+		}
+		else if (isValidFlag(flags[1][i]) == true)
+		{
+			if (sign == 2)
+				rmFlag(flags[1][i], op);
+			else 
+				addFlag(flags[1][i]);
+		}
 		else
 		{
-			setUserLimit(i);
-			sendToEveryuser(":" + op->getNickname() + " MODE " + cmd);
+			StaticFunctions::SendToFd(op->getFd(), ERR_UMODEUNKNOWNFLAG(op->getNickname()), 0);
+			break	;
 		}
+		toSend += flags[1][i];
 	}
-	else if (flags[1][0] == '-' && flags[1][1] == 'l' && !flags[2].empty())
-	{
-		setUserLimit(0);
-		sendToEveryuser(":" + op->getNickname() + " MODE " + cmd);
-	}
-
-	if (flags[1][0] == '+' && flags[1][1] == 'k' && !flags[2].empty())
-	{
-		setPassword(flags[2]);
-		sendToEveryuser(":" + op->getNickname() + " MODE " + cmd);
-	}
-	else if (flags[1][0] == '-' && flags[1][1] == 'k' && !flags[2].empty())
-	{
-		std::string empty = "";
-		setPassword(empty);
-		sendToEveryuser(":" + op->getNickname() + " MODE " + cmd);
-	}
+	for (std::size_t i = 2; i < param; i++)
+		toSend += " " + flags[i];
+	std::cout << toSend << std::endl;
+	sendToEveryuser(":" + op->getNickname() + " MODE " + toSend);
 }
 
 void	Channel::rmFlag(char flag, User *op)
@@ -307,7 +356,7 @@ void		Channel::leaveUser(User *usr)
 	this->_users.erase(its);
 }
 
-void		Channel::addOperator(User *op, std::string &name)
+void		Channel::addOperator(User *op, std::string name)
 {
 	if (isUserOp(op) == false)
 		return	;
@@ -320,7 +369,7 @@ void		Channel::addOperator(User *op, std::string &name)
 	(*its)->addFlag(this->_id, 'o');
 }
 
-void		Channel::rmOperator(User *op, std::string &name)
+void		Channel::rmOperator(User *op, std::string name)
 {
 	if (isUserOp(op) == false)
 		return	;
@@ -330,7 +379,7 @@ void		Channel::rmOperator(User *op, std::string &name)
 		StaticFunctions::SendToFd(op->getFd(), ERR_NOTONCHANNEL(op->getNickname(), _name), 0);
 		return	;
 	}
-	op->rmFlag(this->_id, 'o');
+	(*its)->rmFlag(this->_id, 'o');
 }
 
 void Channel::inviteUser(User *op, User *target)
