@@ -105,8 +105,8 @@ std::vector<std::string> Parser::SplitCmd(std::string str, const char *cs)
 
 std::vector<std::string> Parser::SplitCmdNotLastParam(std::string str, const char *cs)
 {
-	std::string toBeParsed;
-	std::string remain;
+	std::string toBeParsed = "";
+	std::string remain = "";
 	if (str.find(':') != std::string::npos)
 	{
 		toBeParsed = str.substr(0, str.find(':'));

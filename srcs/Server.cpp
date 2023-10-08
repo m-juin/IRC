@@ -294,6 +294,11 @@ void Server::joinChannel(std::pair<Command, std::string>cmd, int i)
 		return ;
 	std::vector<std::string> cmdSplit = Parser::SplitCmd(cmd.second, " ");
 	std::list<User *>::iterator usrIt = StaticFunctions::findByFd(_users, _socket[i]);
+	if (cmdSplit[0].find(':') != std::string::npos)
+	{
+		StaticFunctions::SendToFd(_socket[i], ERR_NOSUCHCHANNEL((*usrIt)->getNickname(), cmdSplit[0]), 0);
+		return	;
+	}
 	std::list<Channel *>::iterator it = find(_channels.begin(), _channels.end(), cmdSplit[0]);
 	if (it != _channels.end())
 	{
