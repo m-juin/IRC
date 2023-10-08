@@ -103,6 +103,29 @@ std::vector<std::string> Parser::SplitCmd(std::string str, const char *cs)
 	return Parsed;
 }
 
+std::vector<std::string> Parser::SplitCmdNotLastParam(std::string str, const char *cs)
+{
+	std::string toBeParsed;
+	std::string remain;
+	if (str.find(':') != std::string::npos)
+	{
+		toBeParsed = str.substr(0, str.find(':'));
+		remain = str.substr(str.find(':') + 1, str.size());
+	}
+	else
+		toBeParsed = str;
+	std::vector<std::string> Parsed;
+	char *token = strtok((char *)(toBeParsed.c_str)(), cs);
+    while (token != NULL)
+    {
+        Parsed.push_back(static_cast<std::string>(token));
+        token = strtok(NULL, cs);
+    }
+	if (!remain.empty())
+		Parsed.push_back(remain);
+	return Parsed;
+}
+
 Parser::Parser()
 {
 }

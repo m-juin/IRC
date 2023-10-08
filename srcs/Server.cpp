@@ -182,8 +182,8 @@ void Server::connexionLost(int i)
 			closeConnexionUser(i);
 			return	;
 		}
-		(*chan)->sendToEveryuser(":" + (*usrIt)->getNickname() + " QUIT :Connexion Lost");
 		(*chan)->leaveUser(*usrIt);
+		(*chan)->sendToEveryuser(":" + (*usrIt)->getNickname() + " QUIT :Connexion Lost");
 		if ((*chan)->getUsers().empty())
 			_channels.erase(chan);
 	}
@@ -209,7 +209,7 @@ void Server::changeModeChannel(std::pair<Command, std::string>cmd, int i)
 void Server::kickUser(std::pair<Command, std::string>cmd, int i)
 {
 	std::list<User *>::iterator usrIt = StaticFunctions::findByFd(_users, _socket[i]);
-	std::vector<std::string> cmdSplit = Parser::SplitCmd(cmd.second, " ");
+	std::vector<std::string> cmdSplit = Parser::SplitCmdNotLastParam(cmd.second, " ");
 	std::list<Channel*>::iterator chan = find(_channels.begin(), _channels.end(), cmdSplit[0]);
 	if (chan == _channels.end())
 	{
@@ -221,10 +221,18 @@ void Server::kickUser(std::pair<Command, std::string>cmd, int i)
 		StaticFunctions::SendToFd(_socket[i], ERR_NEEDMOREPARAMS(static_cast<std::string>("KICK")), 0);
 		return ;	
 	}
-	if (cmdSplit.size() <= 2)
-		(*chan)->kickUser(*usrIt, cmdSplit[1], (*usrIt)->getNickname());
-	else
-		(*chan)->kickUser(*usrIt, cmdSplit[1], cmdSplit[2]);
+	std::vector<std::string> nameSplit = Parser::SplitCmd(cmdSplit[1], ",");
+	for (std::size_t j = 0; j < nameSplit.size(); j++)
+	{
+		if (cmdSplit.size() <= 2)
+			(*chan)->kickUser(*usrIt, nameSplit[j], (*usrIt)->getNickname());
+		else
+		{
+			std::vector<std::string>::iterator begin = cmdSplit.begin();
+			std::advance(begin, 2);
+			(*chan)->kickUser(*usrIt, nameSplit[j], cmdSplit[2]);
+		}
+	}
 	if ((*chan)->getUsers().empty())
 		_channels.erase(chan);
 	
@@ -242,8 +250,8 @@ void Server::quitServer(std::pair<Command, std::string>cmd, int i)
 			closeConnexionUser(i);
 			return	;
 		}
-		(*chan)->sendToEveryuser(":" + (*usrIt)->getNickname() + " QUIT :" + cmd.second);
 		(*chan)->leaveUser(*usrIt);
+		(*chan)->sendToEveryuser(":" + (*usrIt)->getNickname() + " QUIT :" + cmd.second);
 		if ((*chan)->getUsers().empty())
 			_channels.erase(chan);
 	}
