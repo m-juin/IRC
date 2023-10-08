@@ -546,7 +546,7 @@ void Server::inviteUser(std::pair<Command, std::string> cmd, int i, User *op)
 	Channel * myChan = getChannel(cmdSplit[0]);
 	if (myChan == NULL)
 	{
-		StaticFunctions::SendToFd(_socket[i], RPL_INVITING(cmdSplit[1], cmdSplit[0]), 0);
+		StaticFunctions::SendToFd(_socket[i], RPL_INVITING(op->getNickname(), cmdSplit[1], cmdSplit[0]), 0);
 		return ;
 	}
 	myChan->inviteUser(op, *it);

@@ -350,13 +350,12 @@ void Channel::inviteUser(User *op, User *target)
 	{
 		if (this->isUserOp(op) == true)
 		{
-			StaticFunctions::SendToFd(target->getFd(), RPL_INVITING(op->getNickname(), _name), 0);
-			StaticFunctions::SendToFd(op->getFd(), RPL_INVITING(target->getNickname(), _name), 0);
+			StaticFunctions::SendToFd(op->getFd(), RPL_INVITING(op->getNickname(), target->getNickname(), _name), 0);
 			if (std::find(_invitedUsers.begin(), _invitedUsers.end(), target) == _invitedUsers.end())
 				_invitedUsers.push_back(target);
 			return;
 		}
-		else
+		else	
 		{
 			StaticFunctions::SendToFd(op->getFd(), ERR_CHANOPRIVSNEEDED(op->getNickname(), _name), 0);
 			return ;
@@ -364,8 +363,7 @@ void Channel::inviteUser(User *op, User *target)
 	}
 	else
 	{
-		StaticFunctions::SendToFd(op->getFd(), RPL_INVITING(target->getNickname(), _name), 0);
-		StaticFunctions::SendToFd(target->getFd(), RPL_INVITING(op->getNickname(), _name), 0);
+		StaticFunctions::SendToFd(op->getFd(), RPL_INVITING(op->getNickname(), target->getNickname(), _name), 0);
 		if (std::find(_invitedUsers.begin(), _invitedUsers.end(), target) == _invitedUsers.end())
 			_invitedUsers.push_back(target);
 		return;
