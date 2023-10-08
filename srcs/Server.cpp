@@ -550,24 +550,7 @@ void Server::setTopic(std::pair<Command, std::string>cmd, int i)
 		StaticFunctions::SendToFd(_socket[i], ERR_NOSUCHCHANNEL((*currentUser)->getNickname(), cmdSplit[0]), 0);
 		return ;
 	}
-	std::list<User *> usr = myChan->getUsers();
-	std::list<User *>::iterator it = usr.begin();
-	if (myChan->getName() == cmd.second)
-	{
-		if (myChan->getTopic().empty())
-		{
-			StaticFunctions::SendToFd(_socket[i], RPL_NOTOPIC, 0);
-			return ;
-		}
-		else
-		{
-			std::string message = ":127.0.0.1 332 " + (*it)->getNickname() + " " + cmd.second + " " + myChan->getTopic() + "\r\n";
-			send(_socket[i], message.c_str(), message.size(), 0);
-		}
-		return ;
-	}
 	myChan->changeTopic(*currentUser, cmd.second);
-	myChan->sendToEveryuser(":" + (*currentUser)->getNickname() + " TOPIC " + cmd.second );
 }
 
 

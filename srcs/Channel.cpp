@@ -265,14 +265,21 @@ void	Channel::changeUserLimit(User *op, std::size_t limit)
 	}
 }
 
-void	Channel::changeTopic(User *usr, std::string newTopic)
-{
+void	Channel::changeTopic(User *usr, std::string cmd)
+{	
+	std::vector<std::string> newTopic = Parser::SplitCmd(cmd, " ");
+	if (newTopic.size() <= 1)
+	{
+		StaticFunctions::SendToFd(usr->getFd(), RPL_NOTOPIC(usr->getNickname(), _name), 0);
+		return ;
+	}
 	if (this->_channelMod.find('t') != std::string::npos)
 	{
 		if (isUserOp(usr) == false)
 			return	;
 	}
-	this->_topic = newTopic;
+	sendToEveryuser(":" + usr->getNickname() + " TOPIC " + newTopic[0] + " " + newTopic[1]);
+	this->_topic = &newTopic[1][1];
 }
 
 void		Channel::kickUser(User *op, std::string &name, std::string reason)
