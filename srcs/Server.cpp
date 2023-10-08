@@ -504,8 +504,7 @@ void	Server::messageChannel(std::pair<Command, std::string>cmd, int i, User *op)
 			StaticFunctions::SendToFd(_socket[i], ERR_NOSUCHNICK(cmdSplit[0]), 0);
 			return	;
 		}
-		std::string message = ":" + op->getNickname() + " PRIVMSG " + cmd.second + "\r\n";
-		send((*it)->getFd(), message.c_str(), message.size(), 0);
+		StaticFunctions::SendToFd((*it)->getFd(), ":" + op->getNickname() + " PRIVMSG " + cmd.second, 0);
 		return	;
 	}
 	Channel * myChan = getChannel(cmdSplit[0]);
@@ -552,7 +551,6 @@ void Server::setTopic(std::pair<Command, std::string>cmd, int i)
 	}
 	myChan->changeTopic(*currentUser, cmd.second);
 }
-
 
 struct sockaddr_in Server::getAdresse()
 {
