@@ -204,10 +204,10 @@ void	Channel::updateFlag(std::string cmd, User *op)
 		addFlag(flags[1][1]);
 	else if (flags[1][0] == '-')
 		rmFlag(flags[1][1], op);
-	if (flags[1][0] == '+' && flags[1][1] == 'o' && !flags[3].empty())
-		addOperator(op, flags[3]);
-	else if (flags[1][0] == '-' && flags[1][1] == 'o' && !flags[3].empty())
-		rmOperator(op, flags[3]);
+	if (flags[1][0] == '+' && flags[1][1] == 'o' && !flags[2].empty())
+		addOperator(op, flags[2]);
+	else if (flags[1][0] == '-' && flags[1][1] == 'o' && !flags[2].empty())
+		rmOperator(op, flags[2]);
 	
 	if (flags[1][0] == '+' && flags[1][1] == 'l' && !flags[2].empty())
 	{
