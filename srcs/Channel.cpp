@@ -335,18 +335,40 @@ void		Channel::rmOperator(User *op, std::string &name)
 
 void Channel::inviteUser(User *op, User *target)
 {
+	std::cout << this->getName() << std::endl;
+	if (std::find(_users.begin(), _users.end(), target) != _users.end())
+	{
+		StaticFunctions::SendToFd(op->getFd(), ERR_USERONCHANNEL(target->getNickname(), _name), 0);
+		return ;
+	}
+	if (std::find(_users.begin(), _users.end(), op) == _users.end())
+	{
+		StaticFunctions::SendToFd(op->getFd(), ERR_NOTONCHANNEL(op->getNickname(), _name), 0);
+		return ;
+	}
 	if (this->isFlagPresent('i') == true)
 	{
 		if (this->isUserOp(op) == true)
 		{
-			StaticFunctions::SendToFd(target->getFd(), RPL_INVITING(target->getNickname(), _name), 0);
-			_invitedUsers.push_back(target);
+			StaticFunctions::SendToFd(target->getFd(), RPL_INVITING(op->getNickname(), _name), 0);
+			StaticFunctions::SendToFd(op->getFd(), RPL_INVITING(target->getNickname(), _name), 0);
+			if (std::find(_invitedUsers.begin(), _invitedUsers.end(), target) == _invitedUsers.end())
+				_invitedUsers.push_back(target);
 			return;
 		}
 		else
 		{
 			StaticFunctions::SendToFd(op->getFd(), ERR_CHANOPRIVSNEEDED(op->getNickname(), _name), 0);
+			return ;
 		}
+	}
+	else
+	{
+		StaticFunctions::SendToFd(op->getFd(), RPL_INVITING(target->getNickname(), _name), 0);
+		StaticFunctions::SendToFd(target->getFd(), RPL_INVITING(op->getNickname(), _name), 0);
+		if (std::find(_invitedUsers.begin(), _invitedUsers.end(), target) == _invitedUsers.end())
+			_invitedUsers.push_back(target);
+		return;
 	}
 }
 
