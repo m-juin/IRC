@@ -204,35 +204,22 @@ void Server::changeModeChannel(std::pair<Command, std::string>cmd, int i)
 	(*it)->updateFlag(cmd.second, *usrIt);
 }
 
-
-
 void Server::kickUser(std::pair<Command, std::string>cmd, int i)
 {
 	std::list<User *>::iterator usrIt = StaticFunctions::findByFd(_users, _socket[i]);
 	std::vector<std::string> cmdSplit = Parser::SplitCmdNotLastParam(cmd.second, " ");
 	std::list<Channel*>::iterator chan = find(_channels.begin(), _channels.end(), cmdSplit[0]);
-	if (chan == _channels.end())
-	{
-		StaticFunctions::SendToFd(_socket[i], ERR_NOTONCHANNEL((*usrIt)->getNickname(), cmdSplit[0]), 0);
-		return	;
-	}
-	if (cmdSplit[1].size() == 0)
+	if (cmdSplit.size() < 2)
 	{
 		StaticFunctions::SendToFd(_socket[i], ERR_NEEDMOREPARAMS(static_cast<std::string>("KICK")), 0);
-		return ;	
+		return ;
 	}
-	std::vector<std::string> nameSplit = Parser::SplitCmd(cmdSplit[1], ",");
-	for (std::size_t j = 0; j < nameSplit.size(); j++)
+	if (chan == _channels.end())
 	{
-		if (cmdSplit.size() <= 2)
-			(*chan)->kickUser(*usrIt, nameSplit[j], (*usrIt)->getNickname());
-		else
-		{
-			std::vector<std::string>::iterator begin = cmdSplit.begin();
-			std::advance(begin, 2);
-			(*chan)->kickUser(*usrIt, nameSplit[j], cmdSplit[2]);
-		}
+		StaticFunctions::SendToFd(_socket[i], ERR_NOSUCHCHANNEL((*usrIt)->getNickname(), cmdSplit[0]), 0);
+		return ;
 	}
+	(*chan)->kickUser((*usrIt), cmdSplit);
 	if ((*chan)->getUsers().empty())
 		_channels.erase(chan);
 	
@@ -456,7 +443,7 @@ void	Server::setNickname(std::pair<Command, std::string>cmd, int i)
 	if (isUserAuthenticated(i, true) == false)
 		return	;
 	std::list<User *>::iterator it = StaticFunctions::findByFd(_users, _socket[i]);
-	if (cmd.second.size() <= 1 || cmd.second.find_first_of(" \n\t\r\v\f#&:*") != std::string::npos || std::isdigit(cmd.second[0]))
+	if (cmd.second.find_first_of(" \n\t\r\v\f#&:*") != std::string::npos || std::isdigit(cmd.second[0]))
 	{
 		StaticFunctions::SendToFd(_socket[i], ERR_ERRONEUSNICKNAME((*it)->getNickname(), cmd.second), 0);
 		return	;
@@ -568,7 +555,7 @@ void Server::setTopic(std::pair<Command, std::string>cmd, int i)
 		StaticFunctions::SendToFd(_socket[i], ERR_CHANOPRIVSNEEDED((*currentUser)->getNickname(), myChan->getName()), 0);
 		return;
 	}
-	myChan->changeTopic(*currentUser, cmd.second);
+	myChan->changeTopic(*currentUser, &cmd.second[cmd.second.find_first_of(" :") + 2]);
 }
 
 struct sockaddr_in Server::getAdresse()

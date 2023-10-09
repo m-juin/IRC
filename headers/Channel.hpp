@@ -42,7 +42,7 @@ class Channel {
 		void	connectToChannel(User *user);
 		
 		void	rmFlag(char flag, User *op);
-		void	kickUser(User *op, std::string &name, std::string reason);
+		void	kickUser(User *op, std::vector<std::string> args);
 		void	rmOperator(User *op, std::string &name);
 		void	inviteUser(User *op, User *target);
 		void	leaveUser(User *usr);
@@ -54,6 +54,7 @@ class Channel {
 
 		bool	isUserOp(User *op);
 		bool	isFlagPresent(char flag);
+		void	kickOneUser(User *op, std::string name, std::string reason);
 		
 	private:
 		std::size_t		_id;
