@@ -555,7 +555,8 @@ void Server::setTopic(std::pair<Command, std::string>cmd, int i)
 		StaticFunctions::SendToFd(_socket[i], ERR_CHANOPRIVSNEEDED((*currentUser)->getNickname(), myChan->getName()), 0);
 		return;
 	}
-	myChan->changeTopic(*currentUser, &cmd.second[cmd.second.find_first_of(" :") + 2]);
+	else
+		myChan->changeTopic(*currentUser, &cmd.second[cmd.second.find_first_of(" :") + 2]);
 }
 
 struct sockaddr_in Server::getAdresse()

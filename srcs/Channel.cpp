@@ -280,7 +280,10 @@ void	Channel::changeTopic(User *usr, std::string cmd)
 	std::vector<std::string> newTopic = Parser::SplitCmd(cmd, " ");
 	if (newTopic.size() <= 1)
 	{
-		StaticFunctions::SendToFd(usr->getFd(), RPL_NOTOPIC(usr->getNickname(), _name), 0);
+		if (this->_topic.empty() == true)
+			StaticFunctions::SendToFd(usr->getFd(), RPL_NOTOPIC(usr->getNickname(), _name), 0);
+		else
+			StaticFunctions::SendToFd(usr->getFd(), RPL_TOPIC(usr->getNickname(), _name, _topic), 0);
 		return ;
 	}
 	if (this->_channelMod.find('t') != std::string::npos)
