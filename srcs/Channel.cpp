@@ -189,16 +189,11 @@ void	Channel::updateFlag(std::string cmd, User *op)
 		StaticFunctions::SendToFd(op->getFd(), RPL_CHANNELMODEIS(op->getNickname(), _name, _channelMod), 0);
 		return	;
 	}
-	if (flags.size() == 2)
-	{
-		StaticFunctions::SendToFd(op->getFd(), ERR_NEEDMOREPARAMS(flags[0]), 0);
-		return ;
-	}
 	if (isUserOp(op) == false)
 		return ;
 	if (!flags[1].empty() && flags[1].size() != 2)
 	{
-		StaticFunctions::SendToFd(op->getFd(), ERR_NEEDMOREPARAMS(flags[1]), 0);
+		StaticFunctions::SendToFd(op->getFd(), ERR_NEEDMOREPARAMS(op->getNickname(), flags[1]), 0);
 		return;
 	}
 	if (isValidFlag(flags[1][1]) == false)
@@ -206,47 +201,60 @@ void	Channel::updateFlag(std::string cmd, User *op)
 		StaticFunctions::SendToFd(op->getFd(), ERR_UMODEUNKNOWNFLAG(op->getNickname()), 0);
 		return ;
 	}
-	if (flags[1][0] == '+')
+	if (flags[1][1] == 'o')
+	{
+		if (flags.size() <= 2)
+		{
+			StaticFunctions::SendToFd(op->getFd(), ERR_NEEDMOREPARAMS(op->getNickname(), static_cast<std::string>("MODE")), 0);
+			return	;
+		}
+		if (flags[1][0] == '+')
+			addOperator(op, flags[2]);
+		else if (flags[1][0] == '-')
+			rmOperator(op, flags[2]);
+	}
+	else if (flags[1][1] == 'l')
+	{
+		if (flags[1][0] == '-')
+			setUserLimit(0);
+		else if (flags.size() <= 2)
+		{
+			StaticFunctions::SendToFd(op->getFd(), ERR_NEEDMOREPARAMS(op->getNickname(), static_cast<std::string>("MODE")), 0);
+			return	;
+		}
+		if (flags[1][0] == '+')
+		{
+			char *end = NULL;
+			long i = std::strtol(flags[2].c_str(), &end, 10);
+			if (end[0] != 0 || i > 1000 || i < 0 || errno == ERANGE)
+			{
+				StaticFunctions::SendToFd(op->getFd(), ":127.0.0.1 502 " + op->getNickname() + " " + _name + " :+l need number", 0);
+				return	;
+			}
+			else
+				setUserLimit(i);
+		}
+	}
+	else if (flags[1][1] == 'k')
+	{
+		if (flags[1][0] == '-')
+		{
+			std::string empty = "";
+			setPassword(empty);
+		}
+		else if (flags.size() <= 2)
+		{
+			StaticFunctions::SendToFd(op->getFd(), ERR_NEEDMOREPARAMS(op->getNickname(), static_cast<std::string>("MODE")), 0);
+			return	;
+		}
+		if (flags[1][0] == '+')
+			setPassword(flags[2]);
+	}
+	else if (flags[1][0] == '+')
 		addFlag(flags[1][1]);
 	else if (flags[1][0] == '-')
 		rmFlag(flags[1][1], op);
-	if (flags[1][0] == '+' && flags[1][1] == 'o' && !flags[2].empty())
-		addOperator(op, flags[2]);
-	else if (flags[1][0] == '-' && flags[1][1] == 'o' && !flags[2].empty())
-		rmOperator(op, flags[2]);
-	
-	if (flags[1][0] == '+' && flags[1][1] == 'l' && !flags[2].empty())
-	{
-		char *end = NULL;
-		long i = std::strtol(flags[2].c_str(), &end, 10);
-		if (end[0] != 0 || i > 1000 || i < 0 || errno == ERANGE)
-		{
-			StaticFunctions::SendToFd(op->getFd(), ":127.0.0.1 502 " + op->getNickname() + " " + _name + " :+l need number", 0);
-			return	;
-		}
-		else
-		{
-			setUserLimit(i);
-			sendToEveryuser(":" + op->getNickname() + " MODE " + cmd);
-		}
-	}
-	else if (flags[1][0] == '-' && flags[1][1] == 'l' && !flags[2].empty())
-	{
-		setUserLimit(0);
-		sendToEveryuser(":" + op->getNickname() + " MODE " + cmd);
-	}
-
-	if (flags[1][0] == '+' && flags[1][1] == 'k' && !flags[2].empty())
-	{
-		setPassword(flags[2]);
-		sendToEveryuser(":" + op->getNickname() + " MODE " + cmd);
-	}
-	else if (flags[1][0] == '-' && flags[1][1] == 'k' && !flags[2].empty())
-	{
-		std::string empty = "";
-		setPassword(empty);
-		sendToEveryuser(":" + op->getNickname() + " MODE " + cmd);
-	}
+	sendToEveryuser(":" + op->getNickname() + " MODE " + cmd);
 }
 
 void	Channel::rmFlag(char flag, User *op)
@@ -341,6 +349,11 @@ void		Channel::addOperator(User *op, std::string &name)
 {
 	if (isUserOp(op) == false)
 		return	;
+	if (name.size() == 0)
+	{
+		StaticFunctions::SendToFd(op->getFd(), ERR_NEEDMOREPARAMS(op->getNickname(), static_cast<std::string>("MODE")), 0);
+		return	;
+	}
 	std::list<User *>::iterator its = find(this->_users.begin(), this->_users.end(), name);
 	if (its == _users.end())
 	{
@@ -354,6 +367,11 @@ void		Channel::rmOperator(User *op, std::string &name)
 {
 	if (isUserOp(op) == false)
 		return	;
+	if (name.size() == 0)
+	{
+		StaticFunctions::SendToFd(op->getFd(), ERR_NEEDMOREPARAMS(op->getNickname(), static_cast<std::string>("MODE")), 0);
+		return	;
+	}
 	std::list<User *>::iterator its = find(this->_users.begin(), this->_users.end(), name);
 	if (its == _users.end())
 	{
