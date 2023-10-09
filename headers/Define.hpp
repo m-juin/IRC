@@ -26,7 +26,7 @@
 #define ERR_NOTONCHANNEL(nick, channel) (":127.0.0.1 442 " + nick + " " + channel + " :You're not on that channel")
 #define ERR_USERONCHANNEL(nick, channel) (":127.0.0.1 443 * " + nick + " " + channel + " :is already on channel")
 #define ERR_NOTREGISTERED(nick) (":127.0.0.1 451 " + nick + " :You have not registered")
-#define ERR_NEEDMOREPARAMS(cmd) (":127.0.0.1 461 * " + cmd + " :Not enough parameters")
+#define ERR_NEEDMOREPARAMS(nick, cmd) (":127.0.0.1 461 " + nick + " " + cmd + " :Not enough parameters")
 #define ERR_ALREADYREGISTERED(nick) (":127.0.0.1 462 " + nick + " :You may not reregister")
 #define ERR_PASSWDMISMATCH ":127.0.0.1 464 * :Password incorrect"
 #define ERR_CHANNELISFULL(nick, channel) (":127.0.0.1 471 " + nick + " " + channel + " :Cannot join channel (+l)")
