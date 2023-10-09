@@ -34,21 +34,26 @@ class Channel {
 		void	setUserLimit(std::size_t usr);
 		void	setTopic(std::string &topic);
 
-		void	updateFlag(std::vector<std::string>, User *op);
+		void	updateFlag(std::string cmd, User *op);
+
 		void	addFlag(char flag);
 		void	addUser(User *user);
 		void	addOperator(User *op, std::string &name);
 		void	connectToChannel(User *user);
 		
 		void	rmFlag(char flag, User *op);
-		void	kickUser(User *op, std::string &name);
+		void	kickUser(User *op, std::string &name, std::string reason);
 		void	rmOperator(User *op, std::string &name);
-
+		void	inviteUser(User *op, User *target);
 		void	leaveUser(User *usr);
 		void	changeTopic(User *usr, std::string newTopic);
 		void	changeUserLimit(User *op, std::size_t limit);
 
+		void	sendToEveryuser(std::string toSend);
+		void	sendToEveryuserNotHimself(std::string toSend, User *him);
+
 		bool	isUserOp(User *op);
+		bool	isFlagPresent(char flag);
 		
 	private:
 		std::size_t		_id;

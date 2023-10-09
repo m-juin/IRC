@@ -19,6 +19,7 @@ struct Parser
 		std::vector<std::pair<Command, std::string> > getArgs();
 		User * getOperator();
 		static std::vector<std::string> SplitCmd(std::string str, const char *cs);
+		static std::vector<std::string> SplitCmdNotLastParam(std::string str, const char *cs);
 		
 	private:
 		

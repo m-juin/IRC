@@ -16,16 +16,19 @@ Command getCmdEnum(std::string arg)
 
 Parser::Parser(std::list<User *> usrs, int fd, std::string fullCmd)
 {
+	std::cout << fullCmd << "---" << std::endl;
 	std::vector<std::string> lines;
 	if (fullCmd[fullCmd.size() - 1] == '\r')
 		fullCmd = fullCmd.substr(0, fullCmd.size() - 2);
 	else
 		fullCmd = fullCmd.substr(0, fullCmd.size() - 1);
-	if (fullCmd[0] == '/')
-		fullCmd = fullCmd.substr(1, fullCmd.size() - 1);
+	/*if (fullCmd[0] == '/')
+		fullCmd = fullCmd.substr(1, fullCmd.size() - 1);*/
 	lines = SplitCmd(fullCmd, "\r\n");
 	for (std::vector<std::string>::iterator i = lines.begin(); i != lines.end(); i++)
 	{
+		if ((*i)[0] == '/')
+			continue;
 		std::vector<std::string> words = SplitCmd(*i, " ");
 		Command cmd = getCmdEnum(words[0]);
 		if (cmd == JOIN || cmd == PART)
@@ -55,7 +58,7 @@ Parser::Parser(std::list<User *> usrs, int fd, std::string fullCmd)
 			std::size_t pos = (*i).find_first_of(' ');
 			if (pos == std::string::npos)
 			{
-				StaticFunctions::SendToFd(fd, ERR_NEEDMOREPARAMS(words[0]), "", 0);
+				StaticFunctions::SendToFd(fd, ERR_NEEDMOREPARAMS(words[0]), 0);
 				return;
 			}
 			_args.push_back(std::make_pair(cmd, (*i).substr(pos)));
@@ -97,6 +100,29 @@ std::vector<std::string> Parser::SplitCmd(std::string str, const char *cs)
         Parsed.push_back(static_cast<std::string>(token));
         token = strtok(NULL, cs);
     }
+	return Parsed;
+}
+
+std::vector<std::string> Parser::SplitCmdNotLastParam(std::string str, const char *cs)
+{
+	std::string toBeParsed = "";
+	std::string remain = "";
+	if (str.find(':') != std::string::npos)
+	{
+		toBeParsed = str.substr(0, str.find(':'));
+		remain = str.substr(str.find(':') + 1, str.size());
+	}
+	else
+		toBeParsed = str;
+	std::vector<std::string> Parsed;
+	char *token = strtok((char *)(toBeParsed.c_str)(), cs);
+    while (token != NULL)
+    {
+        Parsed.push_back(static_cast<std::string>(token));
+        token = strtok(NULL, cs);
+    }
+	if (!remain.empty())
+		Parsed.push_back(remain);
 	return Parsed;
 }
 
