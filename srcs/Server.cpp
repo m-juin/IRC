@@ -149,6 +149,16 @@ void Server::launch()
 						break;
 					}
 
+					case SKILL:
+					{
+						if( killServer(Parsedcmd->getArgs()[j], Parsedcmd->getOperator())  == true)
+						{
+							delete(Parsedcmd);
+							return ;
+						}
+						break;
+					}
+
 					default:
 						break;
 				}
@@ -156,6 +166,21 @@ void Server::launch()
 			delete Parsedcmd;
 		}	
 	}	
+}
+
+bool Server::killServer(std::pair<Command, std::string>cmd, User *op)
+{
+	if (cmd.second.size() == 0)
+	{
+		StaticFunctions::SendToFd(op->getFd(), ERR_NEEDMOREPARAMS((std::string)"SKILL"), 0);
+		return (false);
+	}
+	if (cmd.second != _password)
+	{
+		StaticFunctions::SendToFd(op->getFd(), "Command SKILL require server password as parameter", 0);
+		return (false);
+	}
+	return (true);
 }
 
 void Server::closeConnexionUser(int i)
@@ -590,5 +615,19 @@ Server & Server::operator=(Server const & server)
 
 Server::~Server()
 {
+	closeAllSocket();
+	std::list<User *>::iterator it = _users.begin();
+	while (it != _users.end())
+	{
+		delete((*it));
+		it++;
+	}
+	std::list<Channel *>::iterator it2 = _channels.begin();
+	while (it2 != _channels.end())
+	{
+		delete((*it2));
+		it2++;
+	}
+	close(_serverFd);
 	return ;
 }
