@@ -240,6 +240,11 @@ void	Channel::updateFlag(std::string cmd, User *op)
 		sendToEveryuser(":" + op->getNickname() + " MODE " + cmd);
 	}
 	
+	if (flags[1][0] == '-' && flags[1][1] == 'i')
+	{
+		_invitedUsers.clear();
+	}
+
 	if (flags[1][1] == 't')
 		sendToEveryuser(":" + op->getNickname() + " MODE " + cmd);
 
@@ -356,6 +361,7 @@ void Channel::inviteUser(User *op, User *target)
 		if (this->isUserOp(op) == true)
 		{
 			StaticFunctions::SendToFd(op->getFd(), RPL_INVITING(op->getNickname(), target->getNickname(), _name), 0);
+			StaticFunctions::SendToFd(target->getFd(), ":" + op->getNickname() + " INVITE " + target->getNickname() + " " + this->_name, 0);
 			if (std::find(_invitedUsers.begin(), _invitedUsers.end(), target) == _invitedUsers.end())
 				_invitedUsers.push_back(target);
 			return;
@@ -369,6 +375,7 @@ void Channel::inviteUser(User *op, User *target)
 	else
 	{
 		StaticFunctions::SendToFd(op->getFd(), RPL_INVITING(op->getNickname(), target->getNickname(), _name), 0);
+		StaticFunctions::SendToFd(target->getFd(), ":" + op->getNickname() + " INVITE " + target->getNickname() + " " + this->_name, 0);
 		if (std::find(_invitedUsers.begin(), _invitedUsers.end(), target) == _invitedUsers.end())
 			_invitedUsers.push_back(target);
 		return;

@@ -537,16 +537,17 @@ void Server::inviteUser(std::pair<Command, std::string> cmd, int i, User *op)
 		StaticFunctions::SendToFd(_socket[i], ERR_NEEDMOREPARAMS(static_cast<std::string>("INVITE")), 0);
 		return ;
 	}
-	std::list<User *>::iterator it = find(_users.begin(), _users.end(), cmdSplit[1]);
+	std::list<User *>::iterator it = find(_users.begin(), _users.end(), cmdSplit[0]);
 	if (it == _users.end())
 	{
-		StaticFunctions::SendToFd(_socket[i], ERR_NOSUCHNICK(cmdSplit[1]), 0);
+		StaticFunctions::SendToFd(_socket[i], ERR_NOSUCHNICK(cmdSplit[0]), 0);
 		return	;
 	}
-	Channel * myChan = getChannel(cmdSplit[0]);
+	Channel * myChan = getChannel(cmdSplit[1]);
 	if (myChan == NULL)
 	{
-		StaticFunctions::SendToFd(_socket[i], RPL_INVITING(op->getNickname(), cmdSplit[1], cmdSplit[0]), 0);
+		StaticFunctions::SendToFd(_socket[i], RPL_INVITING(op->getNickname(), cmdSplit[0], cmdSplit[1]), 0);
+		StaticFunctions::SendToFd((*it)->getFd(), ":" + op->getNickname() + " INVITE " + (*it)->getNickname() + " " + cmdSplit[1], 0);
 		return ;
 	}
 	myChan->inviteUser(op, *it);
