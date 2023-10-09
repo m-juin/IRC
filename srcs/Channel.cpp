@@ -1,6 +1,7 @@
 #include "Channel.hpp"
 #include "Parser.hpp"
 #include "User.hpp"
+#include <cerrno>
 
 Channel::Channel(void)
 {
@@ -174,7 +175,7 @@ bool Channel::isFlagPresent(char flag)
 
 static bool	isValidFlag(const char c)
 {
-	const std::string validFlag = "pitlko";
+	const std::string validFlag = "pitlk";
 	if (validFlag.find(c) != validFlag.npos)
 		return true;
 	return false;
@@ -187,6 +188,11 @@ void	Channel::updateFlag(std::string cmd, User *op)
 	{
 		StaticFunctions::SendToFd(op->getFd(), RPL_CHANNELMODEIS(op->getNickname(), _name, _channelMod), 0);
 		return	;
+	}
+	if (flags.size() == 2)
+	{
+		StaticFunctions::SendToFd(op->getFd(), ERR_NEEDMOREPARAMS(flags[0]), 0);
+		return ;
 	}
 	if (isUserOp(op) == false)
 		return ;
@@ -204,7 +210,6 @@ void	Channel::updateFlag(std::string cmd, User *op)
 		addFlag(flags[1][1]);
 	else if (flags[1][0] == '-')
 		rmFlag(flags[1][1], op);
-	
 	if (flags[1][0] == '+' && flags[1][1] == 'o' && !flags[2].empty())
 		addOperator(op, flags[2]);
 	else if (flags[1][0] == '-' && flags[1][1] == 'o' && !flags[2].empty())
@@ -214,8 +219,11 @@ void	Channel::updateFlag(std::string cmd, User *op)
 	{
 		char *end = NULL;
 		long i = std::strtol(flags[2].c_str(), &end, 10);
-		if (end != NULL && i > 1000 && i < 0)
+		if (end[0] != 0 || i > 1000 || i < 0 || errno == ERANGE)
+		{
 			StaticFunctions::SendToFd(op->getFd(), ":127.0.0.1 502 " + op->getNickname() + " " + _name + " :+l need number", 0);
+			return	;
+		}
 		else
 		{
 			setUserLimit(i);
@@ -239,15 +247,6 @@ void	Channel::updateFlag(std::string cmd, User *op)
 		setPassword(empty);
 		sendToEveryuser(":" + op->getNickname() + " MODE " + cmd);
 	}
-	
-	if (flags[1][0] == '-' && flags[1][1] == 'i')
-	{
-		_invitedUsers.clear();
-	}
-
-	if (flags[1][1] == 't')
-		sendToEveryuser(":" + op->getNickname() + " MODE " + cmd);
-
 }
 
 void	Channel::rmFlag(char flag, User *op)
@@ -361,7 +360,6 @@ void Channel::inviteUser(User *op, User *target)
 		if (this->isUserOp(op) == true)
 		{
 			StaticFunctions::SendToFd(op->getFd(), RPL_INVITING(op->getNickname(), target->getNickname(), _name), 0);
-			StaticFunctions::SendToFd(target->getFd(), ":" + op->getNickname() + " INVITE " + target->getNickname() + " " + this->_name, 0);
 			if (std::find(_invitedUsers.begin(), _invitedUsers.end(), target) == _invitedUsers.end())
 				_invitedUsers.push_back(target);
 			return;
@@ -375,7 +373,6 @@ void Channel::inviteUser(User *op, User *target)
 	else
 	{
 		StaticFunctions::SendToFd(op->getFd(), RPL_INVITING(op->getNickname(), target->getNickname(), _name), 0);
-		StaticFunctions::SendToFd(target->getFd(), ":" + op->getNickname() + " INVITE " + target->getNickname() + " " + this->_name, 0);
 		if (std::find(_invitedUsers.begin(), _invitedUsers.end(), target) == _invitedUsers.end())
 			_invitedUsers.push_back(target);
 		return;
