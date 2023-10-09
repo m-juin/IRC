@@ -294,7 +294,7 @@ void Server::joinChannel(std::pair<Command, std::string>cmd, int i)
 		return ;
 	std::vector<std::string> cmdSplit = Parser::SplitCmd(cmd.second, " ");
 	std::list<User *>::iterator usrIt = StaticFunctions::findByFd(_users, _socket[i]);
-	if (cmdSplit[0].find(':') != std::string::npos)
+	if (cmdSplit[0].find(':') != std::string::npos || cmd.second[0] != '#')
 	{
 		StaticFunctions::SendToFd(_socket[i], ERR_NOSUCHCHANNEL((*usrIt)->getNickname(), cmdSplit[0]), 0);
 		return	;
