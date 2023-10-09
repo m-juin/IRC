@@ -11,7 +11,7 @@ Channel::Channel(std::size_t id, std::string name, User *user)
 {
 	this->_id = id;
 	this->_name = name;
-	this->_channelMod = "o";
+	this->_channelMod = "";
 	this->_usersLimit = 0;
 	user->connectChannel(this->_id);
 	user->addFlag(_id, 'o');
@@ -183,10 +183,10 @@ static bool	isValidFlag(const char c)
 void	Channel::updateFlag(std::string cmd, User *op)
 {
 	std::vector<std::string> flags = Parser::SplitCmd(cmd, " ");
-	if (flags.size() < 2)
+	if (flags.size() == 1)
 	{
-		StaticFunctions::SendToFd(op->getFd(), ERR_NEEDMOREPARAMS(flags[0]), 0);
-		return ;
+		StaticFunctions::SendToFd(op->getFd(), RPL_CHANNELMODEIS(op->getNickname(), _name, _channelMod), 0);
+		return	;
 	}
 	if (isUserOp(op) == false)
 		return ;
@@ -361,7 +361,7 @@ void		Channel::rmOperator(User *op, std::string &name)
 		StaticFunctions::SendToFd(op->getFd(), ERR_NOTONCHANNEL(op->getNickname(), _name), 0);
 		return	;
 	}
-	op->rmFlag(this->_id, 'o');
+	(*its)->rmFlag(this->_id, 'o');
 }
 
 void Channel::inviteUser(User *op, User *target)

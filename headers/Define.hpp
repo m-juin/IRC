@@ -10,6 +10,7 @@
 #define RPL_INVITING(op, nick, channel) (":127.0.0.1 341 " + op + " " + nick + " " + channel)
 #define RPL_NAMREPLY(channel, nickTo, nickFrom) (":127.0.0.1 353 " + nickFrom + " = " + channel + " : " + nickTo)
 #define RPL_ENDOFNAMES(nick, channel) (":127.0.0.1 366 " + nick + " " + channel + " :End of /NAMES list")
+#define RPL_CHANNELMODEIS(nick, channel, mode) (":127.0.0.1 324 " + nick + " " + channel + " +" + mode)
 
 #define ERR_NOSUCHNICK(nick) (":127.0.0.1 401 " + nick + " :No such nick/channel")
 #define ERR_NOSUCHSERVER(serv) (":127.0.0.1 402 " + serv + " :No such server")

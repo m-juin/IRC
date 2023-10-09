@@ -78,11 +78,6 @@ Parser::Parser(std::list<User *> usrs, int fd, std::string fullCmd)
 			_args.push_back(std::make_pair(cmd, msg));
 		}
 	}
-	// for (size_t i = 0; i < _args.size(); i++)
-	// {
-		// std::cout << "CMD = " << _args[i].first << "\n	ARGS = " << _args[i].second << std::endl;
-	// }
-	
 	std::list<User *>::iterator usrIt = StaticFunctions::findByFd(usrs, fd);
 	if (usrIt == usrs.end())
 	{
