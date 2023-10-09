@@ -276,6 +276,7 @@ void	Channel::changeUserLimit(User *op, std::size_t limit)
 
 void	Channel::changeTopic(User *usr, std::string cmd)
 {	
+	std::cout << cmd << std::endl;
 	std::vector<std::string> newTopic = Parser::SplitCmd(cmd, " ");
 	if (newTopic.size() <= 1)
 	{
@@ -287,11 +288,11 @@ void	Channel::changeTopic(User *usr, std::string cmd)
 		if (isUserOp(usr) == false)
 			return	;
 	}
-	sendToEveryuser(":" + usr->getNickname() + " TOPIC " + newTopic[0] + " " + newTopic[1]);
-	this->_topic = &newTopic[1][1];
+	sendToEveryuser(":" + usr->getNickname() + " TOPIC " + this->_name + " " + cmd);
+	this->_topic = cmd;
 }
 
-void		Channel::kickUser(User *op, std::string &name, std::string reason)
+void		Channel::kickOneUser(User *op, std::string name, std::string reason)
 {
 	std::list<User *>::iterator its = find(this->_users.begin(), this->_users.end(), name);
 	if (its == _users.end())
@@ -303,6 +304,26 @@ void		Channel::kickUser(User *op, std::string &name, std::string reason)
 			return	;
 	sendToEveryuser(":" + op->getNickname() + " KICK " + getName() + " " + name + " :" + reason);
 	(*its)->disconnectChannel(this);
+}
+
+void		Channel::kickUser(User *op, std::vector<std::string> args)
+{
+	std::vector<std::string> nameSplit = Parser::SplitCmd(args[1], ",");
+	for (std::size_t j = 0; j < nameSplit.size(); j++)
+	{
+		if (args.size() <= 2)
+		{
+			kickOneUser(op, nameSplit[j], op->getNickname());
+		}
+			//(*chan)->kickUser(op, nameSplit[j], (*usrIt)->getNickname());
+		else
+		{
+			std::vector<std::string>::iterator begin = args.begin();
+			std::advance(begin, 2);
+			//(*chan)->kickUser(*usrIt, nameSplit[j], args[2]);
+			kickOneUser(op, nameSplit[j], args[2]);
+		}
+	}
 }
 
 void		Channel::leaveUser(User *usr)

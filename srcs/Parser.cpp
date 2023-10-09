@@ -16,7 +16,7 @@ Command getCmdEnum(std::string arg)
 
 Parser::Parser(std::list<User *> usrs, int fd, std::string fullCmd)
 {
-	std::cout << fullCmd << "---" << std::endl;
+	//std::cout << fullCmd << "---" << std::endl;
 	std::vector<std::string> lines;
 	if (fullCmd[fullCmd.size() - 1] == '\r')
 		fullCmd = fullCmd.substr(0, fullCmd.size() - 2);
@@ -55,13 +55,14 @@ Parser::Parser(std::list<User *> usrs, int fd, std::string fullCmd)
 		}
 		else if (cmd == TOPIC || cmd == PRIVMSG)
 		{
+			std::cout << (*i) << std::endl;
 			std::size_t pos = (*i).find_first_of(' ');
 			if (pos == std::string::npos)
 			{
 				StaticFunctions::SendToFd(fd, ERR_NEEDMOREPARAMS(words[0]), 0);
 				return;
 			}
-			_args.push_back(std::make_pair(cmd, (*i).substr(pos)));
+			_args.push_back(std::make_pair(cmd, (*i).substr(pos + 1)));
 		}
 		else
 		{
