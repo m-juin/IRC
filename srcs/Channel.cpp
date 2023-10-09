@@ -174,7 +174,7 @@ bool Channel::isFlagPresent(char flag)
 
 static bool	isValidFlag(const char c)
 {
-	const std::string validFlag = "pitlk";
+	const std::string validFlag = "pitlko";
 	if (validFlag.find(c) != validFlag.npos)
 		return true;
 	return false;
@@ -204,6 +204,7 @@ void	Channel::updateFlag(std::string cmd, User *op)
 		addFlag(flags[1][1]);
 	else if (flags[1][0] == '-')
 		rmFlag(flags[1][1], op);
+	
 	if (flags[1][0] == '+' && flags[1][1] == 'o' && !flags[2].empty())
 		addOperator(op, flags[2]);
 	else if (flags[1][0] == '-' && flags[1][1] == 'o' && !flags[2].empty())
@@ -238,6 +239,15 @@ void	Channel::updateFlag(std::string cmd, User *op)
 		setPassword(empty);
 		sendToEveryuser(":" + op->getNickname() + " MODE " + cmd);
 	}
+	
+	if (flags[1][0] == '-' && flags[1][1] == 'i')
+	{
+		_invitedUsers.clear();
+	}
+
+	if (flags[1][1] == 't')
+		sendToEveryuser(":" + op->getNickname() + " MODE " + cmd);
+
 }
 
 void	Channel::rmFlag(char flag, User *op)
@@ -351,6 +361,7 @@ void Channel::inviteUser(User *op, User *target)
 		if (this->isUserOp(op) == true)
 		{
 			StaticFunctions::SendToFd(op->getFd(), RPL_INVITING(op->getNickname(), target->getNickname(), _name), 0);
+			StaticFunctions::SendToFd(target->getFd(), ":" + op->getNickname() + " INVITE " + target->getNickname() + " " + this->_name, 0);
 			if (std::find(_invitedUsers.begin(), _invitedUsers.end(), target) == _invitedUsers.end())
 				_invitedUsers.push_back(target);
 			return;
@@ -364,6 +375,7 @@ void Channel::inviteUser(User *op, User *target)
 	else
 	{
 		StaticFunctions::SendToFd(op->getFd(), RPL_INVITING(op->getNickname(), target->getNickname(), _name), 0);
+		StaticFunctions::SendToFd(target->getFd(), ":" + op->getNickname() + " INVITE " + target->getNickname() + " " + this->_name, 0);
 		if (std::find(_invitedUsers.begin(), _invitedUsers.end(), target) == _invitedUsers.end())
 			_invitedUsers.push_back(target);
 		return;
