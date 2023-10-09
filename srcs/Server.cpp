@@ -236,7 +236,7 @@ void Server::kickUser(std::pair<Command, std::string>cmd, int i)
 	std::list<Channel*>::iterator chan = find(_channels.begin(), _channels.end(), cmdSplit[0]);
 	if (cmdSplit.size() < 2)
 	{
-		StaticFunctions::SendToFd(_socket[i], ERR_NEEDMOREPARAMS(static_cast<std::string>("KICK")), 0);
+		StaticFunctions::SendToFd(_socket[i], ERR_NEEDMOREPARAMS((*usrIt)->getNickname(), static_cast<std::string>("KICK")), 0);
 		return ;
 	}
 	if (chan == _channels.end())
@@ -510,7 +510,7 @@ void	Server::setUsername(std::pair<Command, std::string>cmd, int i)
 	}
 	if (cmd.second.size() == 0)
 	{
-		StaticFunctions::SendToFd(_socket[i], ERR_NEEDMOREPARAMS(static_cast<std::string>("USER")), 0);
+		StaticFunctions::SendToFd(_socket[i], ERR_NEEDMOREPARAMS((*it)->getNickname(), static_cast<std::string>("USER")), 0);
 		return;
 	}
 	(*it)->setUsername(cmd.second);
@@ -546,7 +546,7 @@ void Server::inviteUser(std::pair<Command, std::string> cmd, int i, User *op)
 	std::vector<std::string> cmdSplit = Parser::SplitCmd(cmd.second, " ");
 	if (cmdSplit.size() < 2)
 	{
-		StaticFunctions::SendToFd(_socket[i], ERR_NEEDMOREPARAMS(static_cast<std::string>("INVITE")), 0);
+		StaticFunctions::SendToFd(_socket[i], ERR_NEEDMOREPARAMS(op->getNickname(), static_cast<std::string>("INVITE")), 0);
 		return ;
 	}
 	std::list<User *>::iterator it = find(_users.begin(), _users.end(), cmdSplit[0]);
