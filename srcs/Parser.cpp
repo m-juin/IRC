@@ -3,7 +3,7 @@
 
 Command getCmdEnum(std::string arg)
 {
-	std::string validCmd[] = {"PASS", "USER", "NICK", "JOIN", "MODE", "WHO", "PART", "QUIT", "PRIVMSG", "TOPIC", "KICK", "INVITE", "LIST", "SKILL"};
+	std::string validCmd[] = {"PASS", "USER", "NICK", "JOIN", "MODE", "WHO", "PART", "QUIT", "PRIVMSG", "TOPIC", "KICK", "INVITE", "LIST", "SKILL", "CAP"};
 	size_t size = sizeof(validCmd) / sizeof(std::string);
 	for (size_t i = 0; i < size; i++)
 	{
@@ -24,10 +24,12 @@ Parser::Parser(std::list<User *> usrs, int fd, std::string fullCmd)
 	lines = SplitCmd(fullCmd, "\r\n");
 	for (std::vector<std::string>::iterator i = lines.begin(); i != lines.end(); i++)
 	{
-		if ((*i)[0] == '/')
-			continue;
 		std::vector<std::string> words = SplitCmd(*i, " ");
-		Command cmd = getCmdEnum(words[0]);
+		Command cmd;
+		if (words.size() > 0)
+			cmd = getCmdEnum(words[0]);
+		else
+			cmd = NONE;
 		if (cmd == JOIN || cmd == PART)
 		{
 			std::vector<std::string> channels;
@@ -36,7 +38,6 @@ Parser::Parser(std::list<User *> usrs, int fd, std::string fullCmd)
 				channels = SplitCmd(words[1], ",");
 			else
 			{
-				std::cerr << "/JOIN Error: need at least one channel to join\n";
 				return ;
 			}
 			if (words.size() > 2)
@@ -52,7 +53,6 @@ Parser::Parser(std::list<User *> usrs, int fd, std::string fullCmd)
 		}
 		else if (cmd == TOPIC || cmd == PRIVMSG)
 		{
-			std::cout << (*i) << std::endl;
 			std::size_t pos = (*i).find_first_of(' ');
 			if (pos == std::string::npos)
 			{
@@ -64,7 +64,8 @@ Parser::Parser(std::list<User *> usrs, int fd, std::string fullCmd)
 		else
 		{
 			std::string msg;
-			size_t y = 1;
+
+			size_t y = (cmd == NONE ? 0 : 1);
 			while (y < words.size())
 			{
 				msg += words[y];
@@ -78,7 +79,7 @@ Parser::Parser(std::list<User *> usrs, int fd, std::string fullCmd)
 	std::list<User *>::iterator usrIt = StaticFunctions::findByFd(usrs, fd);
 	if (usrIt == usrs.end())
 	{
-		std::cerr << "Unknown user fd: \"" << fd << "\"\n";
+		_op = NULL;
 		return;
 	}
 	_op = *usrIt;

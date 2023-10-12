@@ -38,5 +38,6 @@
 #define ERR_UMODEUNKNOWNFLAG(nick) (":127.0.0.1 501 " + nick +  " :Unknown MODE flag")
 #define ERR_USERSDONTMATCH ":127.0.0.1 502 * :Cant change mode for other users"
 #define ERR_INVALIDKEY(channel) (channel + " :Key is not well-formed")
+#define ERR_BADCHANMASK0(nick, channel) (":127.0.0.1 476 " + nick + " " + channel + " :Bad Channel Mask")
 
 #endif

@@ -22,7 +22,6 @@ int main(int argc, char **argv)
         return (1);
     }
 
-    // connect server -----
 	Server server(port, argv[2]);
 	server.launch();
     return (0);

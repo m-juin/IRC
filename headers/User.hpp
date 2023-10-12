@@ -36,9 +36,11 @@ class User {
 		void	connectChannel(std::size_t channelID);
 		void	disconnectChannel(Channel *chn);
 
-		std::string  		getFlags(std::size_t channelId);
-		std::size_t			getChanId(int idx);
-		std::size_t			getNbChannel() const;
+		std::string  	getFlags(std::size_t channelId);
+		std::size_t		getChanId(int idx);
+		std::size_t		getNbChannel() const;
+		bool			isConnected(std::size_t id);
+
 
     private:
 		flagsPair::iterator		getFlagsIndex(std::size_t channelId);

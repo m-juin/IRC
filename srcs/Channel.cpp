@@ -175,7 +175,7 @@ bool Channel::isFlagPresent(char flag)
 
 static bool	isValidFlag(const char c)
 {
-	const std::string validFlag = "pitlk";
+	const std::string validFlag = "itlko";
 	if (validFlag.find(c) != validFlag.npos)
 		return true;
 	return false;
@@ -183,11 +183,17 @@ static bool	isValidFlag(const char c)
 
 void	Channel::updateFlag(std::string cmd, User *op)
 {
+	std::cout << cmd << std::endl;
 	std::vector<std::string> flags = Parser::SplitCmd(cmd, " ");
 	if (flags.size() == 1)
 	{
 		StaticFunctions::SendToFd(op->getFd(), RPL_CHANNELMODEIS(op->getNickname(), _name, _channelMod), 0);
 		return	;
+	}
+	if (StaticFunctions::findByFd(_users, op->getFd()) == _users.end())
+	{
+		StaticFunctions::SendToFd(op->getFd(), ERR_NOTONCHANNEL(op->getNickname(), _name), 0);
+		return ;
 	}
 	if (isUserOp(op) == false)
 		return ;
@@ -203,10 +209,15 @@ void	Channel::updateFlag(std::string cmd, User *op)
 	}
 	if (flags[1][1] == 'o')
 	{
-		if (flags.size() <= 2)
+		if (flags.size() != 3)
 		{
 			StaticFunctions::SendToFd(op->getFd(), ERR_NEEDMOREPARAMS(op->getNickname(), static_cast<std::string>("MODE")), 0);
 			return	;
+		}
+		else if (std::find(_users.begin(), _users.end(), flags[2]) == _users.end())
+		{
+			StaticFunctions::SendToFd(op->getFd(), ERR_NOSUCHNICK(flags[2]), 0);
+			return ;
 		}
 		if (flags[1][0] == '+')
 			addOperator(op, flags[2]);
@@ -217,7 +228,7 @@ void	Channel::updateFlag(std::string cmd, User *op)
 	{
 		if (flags[1][0] == '-')
 			setUserLimit(0);
-		else if (flags.size() <= 2)
+		else if (flags.size() != 3)
 		{
 			StaticFunctions::SendToFd(op->getFd(), ERR_NEEDMOREPARAMS(op->getNickname(), static_cast<std::string>("MODE")), 0);
 			return	;
@@ -242,7 +253,7 @@ void	Channel::updateFlag(std::string cmd, User *op)
 			std::string empty = "";
 			setPassword(empty);
 		}
-		else if (flags.size() <= 2)
+		else if (flags.size() != 3)
 		{
 			StaticFunctions::SendToFd(op->getFd(), ERR_NEEDMOREPARAMS(op->getNickname(), static_cast<std::string>("MODE")), 0);
 			return	;
@@ -250,10 +261,28 @@ void	Channel::updateFlag(std::string cmd, User *op)
 		if (flags[1][0] == '+')
 			setPassword(flags[2]);
 	}
-	else if (flags[1][0] == '+')
-		addFlag(flags[1][1]);
-	else if (flags[1][0] == '-')
-		rmFlag(flags[1][1], op);
+	else if (flags[1][1] == 'i')
+	{
+		if (flags[1][0] == '+')
+			addFlag(flags[1][1]);
+		else if (flags[1][0] == '-')
+		{
+			rmFlag(flags[1][1], op);
+			this->_invitedUsers.clear();
+		}
+	}
+	else
+	{
+		if (flags.size() > 2)
+		{
+			StaticFunctions::SendToFd(op->getFd(), ERR_NEEDMOREPARAMS(op->getNickname(), static_cast<std::string>("MODE")), 0);
+			return	;
+		}
+		if (flags[1][0] == '+')
+			addFlag(flags[1][1]);
+		else
+			rmFlag(flags[1][1], op);
+	}
 	sendToEveryuser(":" + op->getNickname() + " MODE " + cmd);
 }
 
@@ -272,6 +301,17 @@ void	Channel::addFlag(char flag)
 		this->_channelMod += flag;
 }
 
+void	Channel::rmInviteUser(User *target)
+{
+	std::list<User * >::iterator usrIt = StaticFunctions::findByFd(this->_invitedUsers, target->getFd());
+	if(usrIt == _invitedUsers.end())
+	{
+		std::cerr << "No user invited on channel!" << std::endl;
+		return ;
+	}
+	_invitedUsers.erase(usrIt);
+}
+
 void	Channel::changeUserLimit(User *op, std::size_t limit)
 {
 	if (isUserOp(op) == false)
@@ -284,9 +324,7 @@ void	Channel::changeUserLimit(User *op, std::size_t limit)
 
 void	Channel::changeTopic(User *usr, std::string cmd)
 {	
-	std::cout << cmd << std::endl;
-	std::vector<std::string> newTopic = Parser::SplitCmd(cmd, " ");
-	if (newTopic.size() <= 1)
+	if (cmd.empty() == true)
 	{
 		if (this->_topic.empty() == true)
 			StaticFunctions::SendToFd(usr->getFd(), RPL_NOTOPIC(usr->getNickname(), _name), 0);
@@ -294,6 +332,7 @@ void	Channel::changeTopic(User *usr, std::string cmd)
 			StaticFunctions::SendToFd(usr->getFd(), RPL_TOPIC(usr->getNickname(), _name, _topic), 0);
 		return ;
 	}
+	std::vector<std::string> newTopic = Parser::SplitCmd(cmd, " ");
 	if (this->_channelMod.find('t') != std::string::npos)
 	{
 		if (isUserOp(usr) == false)
@@ -326,12 +365,10 @@ void		Channel::kickUser(User *op, std::vector<std::string> args)
 		{
 			kickOneUser(op, nameSplit[j], op->getNickname());
 		}
-			//(*chan)->kickUser(op, nameSplit[j], (*usrIt)->getNickname());
 		else
 		{
 			std::vector<std::string>::iterator begin = args.begin();
 			std::advance(begin, 2);
-			//(*chan)->kickUser(*usrIt, nameSplit[j], args[2]);
 			kickOneUser(op, nameSplit[j], args[2]);
 		}
 	}
@@ -386,7 +423,6 @@ void		Channel::rmOperator(User *op, std::string &name)
 
 void Channel::inviteUser(User *op, User *target)
 {
-	std::cout << this->getName() << std::endl;
 	if (std::find(_users.begin(), _users.end(), target) != _users.end())
 	{
 		StaticFunctions::SendToFd(op->getFd(), ERR_USERONCHANNEL(target->getNickname(), _name), 0);
@@ -402,6 +438,7 @@ void Channel::inviteUser(User *op, User *target)
 		if (this->isUserOp(op) == true)
 		{
 			StaticFunctions::SendToFd(op->getFd(), RPL_INVITING(op->getNickname(), target->getNickname(), _name), 0);
+			StaticFunctions::SendToFd(target->getFd(), ":" + op->getNickname() + " INVITE " + target->getNickname() + " " + this->_name, 0);
 			if (std::find(_invitedUsers.begin(), _invitedUsers.end(), target) == _invitedUsers.end())
 				_invitedUsers.push_back(target);
 			return;
@@ -415,8 +452,7 @@ void Channel::inviteUser(User *op, User *target)
 	else
 	{
 		StaticFunctions::SendToFd(op->getFd(), RPL_INVITING(op->getNickname(), target->getNickname(), _name), 0);
-		if (std::find(_invitedUsers.begin(), _invitedUsers.end(), target) == _invitedUsers.end())
-			_invitedUsers.push_back(target);
+		StaticFunctions::SendToFd(target->getFd(), ":" + op->getNickname() + " INVITE " + target->getNickname() + " " + this->_name, 0);
 		return;
 	}
 }
