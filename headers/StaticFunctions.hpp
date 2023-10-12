@@ -13,7 +13,6 @@ class StaticFunctions
 	public:
 		static void SendToFd(int fd, std::string str, int flag);
 		static std::list<User *>::iterator findByFd(std::list<User *> &usr, int fd);
-		static std::vector<User *>::iterator findByFd(std::vector<User *> &usr, int fd);
 		static std::list<Channel *>::iterator findChannelById(std::list<Channel *> &channels, std::size_t id);
 };
 

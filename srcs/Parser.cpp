@@ -79,6 +79,7 @@ Parser::Parser(std::list<User *> usrs, int fd, std::string fullCmd)
 	std::list<User *>::iterator usrIt = StaticFunctions::findByFd(usrs, fd);
 	if (usrIt == usrs.end())
 	{
+		//std::cerr << "Unknown user fd: \"" << fd << "\"\n";
 		_op = NULL;
 		return;
 	}

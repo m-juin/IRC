@@ -199,9 +199,9 @@ void Server::connexionLost(int i)
 		return	;
 	}
 	std::list<User *>::iterator usrIt = StaticFunctions::findByFd(_users, _socket[i]);
-	for(std::size_t nbChan = 0; nbChan < (*usrIt)->getNbChannel(); nbChan++)
+	while ((*usrIt)->getNbChannel() > 0)
 	{
-		std::size_t id = (*usrIt)->getChanId(nbChan);
+		std::size_t id = (*usrIt)->getChanId(0);
 		std::list<Channel *>::iterator chan = StaticFunctions::findChannelById(_channels, id);
 		if (chan == _channels.end())
 		{
@@ -210,10 +210,13 @@ void Server::connexionLost(int i)
 			closeConnexionUser(i);
 			return	;
 		}
-		(*chan)->leaveUser(*usrIt);
 		(*chan)->sendToEveryuser(":" + (*usrIt)->getNickname() + " QUIT :Connexion Lost");
+		(*usrIt)->disconnectChannel((*chan));
 		if ((*chan)->getUsers().empty())
+		{
+			delete *chan;
 			_channels.erase(chan);
+		}
 	}
 	delete (*usrIt);
 	_users.erase(usrIt);
@@ -262,28 +265,26 @@ void Server::quitServer(std::pair<Command, std::string>cmd, int i)
 		return	;
 	}
 	std::list<User *>::iterator usrIt = StaticFunctions::findByFd(_users, _socket[i]);
-	std::list<Channel *>::iterator chanIt = _channels.begin();
-	for (; chanIt != this->_channels.end(); chanIt++)
+	while ((*usrIt)->getNbChannel() > 0)
 	{
-		(*chanIt)->rmInviteUser(*usrIt);
-	}
-	for(std::size_t nbChan = 0; nbChan < (*usrIt)->getNbChannel(); nbChan++)
-	{
-		std::size_t id = (*usrIt)->getChanId(nbChan);
+		std::size_t id = (*usrIt)->getChanId(0);
 		std::list<Channel *>::iterator chan = StaticFunctions::findChannelById(_channels, id);
 		if (chan == _channels.end())
 		{
-			delete(*usrIt);
+			delete (*usrIt);
 			_users.erase(usrIt);
 			closeConnexionUser(i);
 			return	;
 		}
-		(*chan)->leaveUser(*usrIt);
 		(*chan)->sendToEveryuser(":" + (*usrIt)->getNickname() + " QUIT :" + cmd.second);
+		(*usrIt)->disconnectChannel((*chan));
 		if ((*chan)->getUsers().empty())
+		{
+			delete *chan;
 			_channels.erase(chan);
+		}
 	}
-	delete(*usrIt);
+	delete (*usrIt);
 	_users.erase(usrIt);
 	closeConnexionUser(i);
 }
@@ -329,7 +330,6 @@ void Server::joinChannel(std::pair<Command, std::string>cmd, int i)
 		return	;
 	}
 	std::list<Channel *>::iterator it = find(_channels.begin(), _channels.end(), cmdSplit[0]);
-
 	if (it != _channels.end())
 	{
 		if ((*usrIt)->isConnected((*it)->getId()) == true)
@@ -341,7 +341,7 @@ void Server::joinChannel(std::pair<Command, std::string>cmd, int i)
 		}
 		if ((*it)->getUserLimit() == 0)
 			(*it)->addUser(*usrIt);
-		else if ((*it)->getUserLimit() != 0 && (*it)->getUsers().size() < (*it)->getUserLimit())
+		else if ((*it)->getUserLimit() != 0 && (*it)->getUsers().size() + 1 < (*it)->getUserLimit())
 			(*it)->addUser(*usrIt);
 		else
 			StaticFunctions::SendToFd(_socket[i], ERR_CHANNELISFULL((*usrIt)->getNickname(), cmd.second), 0);
@@ -350,6 +350,7 @@ void Server::joinChannel(std::pair<Command, std::string>cmd, int i)
 	{
 		std::string empty = "";
 		Channel *c = new Channel(_channelNumber, cmdSplit[0], *usrIt);
+		std::cout << _channelNumber << std::endl;
 		_channelNumber++;
 		if (cmdSplit.size() > 1 && !cmdSplit[1].empty())
 			c->setPassword(cmdSplit[1]);
@@ -375,12 +376,15 @@ void Server::leaveChannel(std::pair<Command, std::string>cmd, int i)
 		if (cmdSplit.size() <= 1)
 			reason = "Leaving";
 		else
-			reason = cmdSplit[1];
+			reason = cmdSplit[1];	
 		(*it)->sendToEveryuser(":" + (*usrIt)->getNickname() + " PART " + (*it)->getName() + " " + reason);
-		(*usrIt)->disconnectChannel((*it));
+		(*usrIt)->disconnectChannel(*it);
+		if ((*it)->getUsers().empty())
+		{
+			delete *it;
+			_channels.erase(it);
+		}
 	}
-	if ((*it)->getUsers().empty())
-		_channels.erase(it);
 }
 
 fd_set Server::addNewSocket()
