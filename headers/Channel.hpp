@@ -45,7 +45,6 @@ class Channel {
 		void	kickUser(User *op, std::vector<std::string> args);
 		void	rmOperator(User *op, std::string &name);
 		void	inviteUser(User *op, User *target);
-		void	rmInviteUser(User *target);
 		void	leaveUser(User *usr);
 		void	changeTopic(User *usr, std::string newTopic);
 		void	changeUserLimit(User *op, std::size_t limit);
