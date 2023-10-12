@@ -34,7 +34,7 @@ class User {
 		bool	rmFlag(std::size_t channelID, char flag);
 
 		void	connectChannel(std::size_t channelID);
-		void	disconnectChannel(Channel *chn);
+		bool	disconnectChannel(Channel *chn);
 
 		std::string  	getFlags(std::size_t channelId);
 		std::size_t		getChanId(int idx);

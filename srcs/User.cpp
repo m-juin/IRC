@@ -201,16 +201,17 @@ void User::connectChannel(std::size_t channelID)
 	this->_channelsFlags.push_back(newFlags);	
 }
 
-void User::disconnectChannel(Channel *chn)
+bool User::disconnectChannel(Channel *chn)
 {
 	flagsPair::iterator it = getFlagsIndex(chn->getId());
 	if ( it == this->_channelsFlags.end() )
 	{
 		StaticFunctions::SendToFd(_fd, ERR_NOTONCHANNEL(_nickname, chn->getName()), 0);
-		return ;
+		return false;
 	}
 	chn->leaveUser(this);
 	this->_channelsFlags.erase(it);
+	return true;
 }
 
 /*----------------------------------------------------------------------------------------------*/

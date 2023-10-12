@@ -376,8 +376,8 @@ void Server::leaveChannel(std::pair<Command, std::string>cmd, int i)
 			reason = "Leaving";
 		else
 			reason = cmdSplit[1];
-		(*it)->sendToEveryuser(":" + (*usrIt)->getNickname() + " PART " + (*it)->getName() + " " + reason);
-		(*usrIt)->disconnectChannel((*it));
+		if ((*usrIt)->disconnectChannel((*it)) == true)
+			(*it)->sendToEveryuser(":" + (*usrIt)->getNickname() + " PART " + (*it)->getName() + " " + reason);
 	}
 	if ((*it)->getUsers().empty())
 		_channels.erase(it);
