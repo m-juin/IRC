@@ -14,9 +14,9 @@ Channel::Channel(std::size_t id, std::string name, User *user)
 	this->_name = name;
 	this->_channelMod = "";
 	this->_usersLimit = 0;
-	user->connectChannel(this->_id);
+	//user->connectChannel(this->_id);
 	user->addFlag(_id, 'o');
-	addUser(user);
+	addUser(user);	
 }
 
 Channel::~Channel()

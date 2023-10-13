@@ -89,9 +89,9 @@ void	User::setFd(int value)
 
 flagsPair::iterator User::getFlagsIndex(std::size_t channelID)
 {
-	flagsPair::iterator it;
+	flagsPair::iterator it = this->_channelsFlags.begin();
 	flagsPair::iterator ite = this->_channelsFlags.end();
-	for (it = this->_channelsFlags.begin(); it != ite; it++)
+	for (; it != ite; it++)
 	{
 		if (it->first == channelID)
 			return it;
@@ -185,11 +185,9 @@ std::string User::getFlags(std::size_t channelId)
 	return getFlagsIndex(channelId)->second;
 }
 
-std::size_t User::getChanId(int idx)
+std::size_t User::getChanId()
 {
-	flagsPair::iterator	it = _channelsFlags.begin();
-	std::advance(it, idx);
-	return	it->first;
+	return	_channelsFlags.begin()->first;
 }
 
 std::size_t User::getNbChannel() const
@@ -206,7 +204,7 @@ std::size_t User::getNbChannel() const
 void User::connectChannel(std::size_t channelID)
 {
 	std::pair<std::size_t, std::string> newFlags = std::make_pair(channelID, "");
-	this->_channelsFlags.push_back(newFlags);	
+	this->_channelsFlags.push_back(newFlags);
 }
 
 bool User::disconnectChannel(Channel *chn)
@@ -217,7 +215,6 @@ bool User::disconnectChannel(Channel *chn)
 		StaticFunctions::SendToFd(_fd, ERR_NOTONCHANNEL(_nickname, chn->getName()), 0);
 		return false;
 	}
-	std::cout << chn->getId() << std::endl;
 	chn->leaveUser(this);
 	this->_channelsFlags.erase(it);
 	return true;

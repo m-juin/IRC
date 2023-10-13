@@ -201,7 +201,7 @@ void Server::connexionLost(int i)
 	std::list<User *>::iterator usrIt = StaticFunctions::findByFd(_users, _socket[i]);
 	while ((*usrIt)->getNbChannel() > 0)
 	{
-		std::size_t id = (*usrIt)->getChanId(0);
+		std::size_t id = (*usrIt)->getChanId();
 		std::list<Channel *>::iterator chan = StaticFunctions::findChannelById(_channels, id);
 		if (chan == _channels.end())
 		{
@@ -210,8 +210,8 @@ void Server::connexionLost(int i)
 			closeConnexionUser(i);
 			return	;
 		}
-		(*chan)->sendToEveryuser(":" + (*usrIt)->getNickname() + " QUIT :Connexion Lost");
 		(*usrIt)->disconnectChannel((*chan));
+		(*chan)->sendToEveryuser(":" + (*usrIt)->getNickname() + " QUIT :Connexion Lost");
 		if ((*chan)->getUsers().empty())
 		{
 			delete *chan;
@@ -267,7 +267,7 @@ void Server::quitServer(std::pair<Command, std::string>cmd, int i)
 	std::list<User *>::iterator usrIt = StaticFunctions::findByFd(_users, _socket[i]);
 	while ((*usrIt)->getNbChannel() > 0)
 	{
-		std::size_t id = (*usrIt)->getChanId(0);
+		std::size_t id = (*usrIt)->getChanId();
 		std::list<Channel *>::iterator chan = StaticFunctions::findChannelById(_channels, id);
 		if (chan == _channels.end())
 		{
@@ -276,8 +276,8 @@ void Server::quitServer(std::pair<Command, std::string>cmd, int i)
 			closeConnexionUser(i);
 			return	;
 		}
-		(*chan)->sendToEveryuser(":" + (*usrIt)->getNickname() + " QUIT :" + cmd.second);
 		(*usrIt)->disconnectChannel((*chan));
+		(*chan)->sendToEveryuser(":" + (*usrIt)->getNickname() + " QUIT :" + cmd.second);
 		if ((*chan)->getUsers().empty())
 		{
 			delete *chan;
@@ -350,7 +350,6 @@ void Server::joinChannel(std::pair<Command, std::string>cmd, int i)
 	{
 		std::string empty = "";
 		Channel *c = new Channel(_channelNumber, cmdSplit[0], *usrIt);
-		std::cout << _channelNumber << std::endl;
 		_channelNumber++;
 		if (cmdSplit.size() > 1 && !cmdSplit[1].empty())
 			c->setPassword(cmdSplit[1]);
@@ -377,7 +376,7 @@ void Server::leaveChannel(std::pair<Command, std::string>cmd, int i)
 			reason = "Leaving";
 		else
 			reason = cmdSplit[1];
-		if ((*usrIt)->disconnectChannel((*it)) == true)
+		if ((*usrIt)->disconnectChannel(*it) == true)
 			(*it)->sendToEveryuser(":" + (*usrIt)->getNickname() + " PART " + (*it)->getName() + " " + reason);
 	}
 	if ((*it)->getUsers().empty())
