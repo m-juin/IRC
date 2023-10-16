@@ -39,7 +39,7 @@ class Server {
 		void joinChannel(std::pair<Command, std::string>cmd, int i);
 		void checkPass(std::pair<Command, std::string>cmd, int i);
 		void quitServer(std::pair<Command, std::string>cmd, int i);
-		void changeModeChannel(std::pair<Command, std::string>cmd, int i);
+		void changeModeChannel(std::pair<Command, std::string>cmd, int i, User *op);
 
 		void connexionLost(int i);
 

@@ -300,7 +300,7 @@ void	Channel::changeTopic(User *usr, std::string cmd)
 			StaticFunctions::SendToFd(usr->getFd(), RPL_TOPIC(usr->getNickname(), _name, _topic), 0);
 		return ;
 	}
-	std::list<User *>::iterator its = find(this->_users.begin(), this->_users.end(), usr->getNickname());
+	std::list<User *>::iterator its = find(this->_users.begin(), this->_users.end(), usr);
 	if (its == _users.end())
 	{
 		StaticFunctions::SendToFd(usr->getFd(), ERR_USERNOTINCHANNEL(usr->getNickname(), this->getName()), 0);

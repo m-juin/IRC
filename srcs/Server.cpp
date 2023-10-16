@@ -128,7 +128,7 @@ void Server::launch()
 					}
 					
 					case MODE: {
-						changeModeChannel(Parsedcmd->getArgs()[j], i);
+						changeModeChannel(Parsedcmd->getArgs()[j], i, Parsedcmd->getOperator());
 						break;
 					}
 
@@ -223,7 +223,7 @@ void Server::connexionLost(int i)
 	closeConnexionUser(i);
 }
 
-void Server::changeModeChannel(std::pair<Command, std::string>cmd, int i)
+void Server::changeModeChannel(std::pair<Command, std::string>cmd, int i, User *op)
 {
 	std::list<User *>::iterator usrIt = StaticFunctions::findByFd(_users, _socket[i]);
 	std::vector<std::string> cmdSplit = Parser::SplitCmd(cmd.second, " ");
@@ -231,6 +231,13 @@ void Server::changeModeChannel(std::pair<Command, std::string>cmd, int i)
 	if (it == _channels.end())
 	{
 		StaticFunctions::SendToFd(_socket[i], ERR_NOSUCHCHANNEL((*usrIt)->getNickname(), cmdSplit[0]), 0);
+		return ;
+	}
+	std::list<User *> usersChan = (*it)->getUsers();
+	std::list<User *>::iterator its = find(usersChan.begin(), usersChan.end(), op);
+	if (its == usersChan.end())
+	{
+		StaticFunctions::SendToFd(op->getFd(), ERR_USERNOTINCHANNEL(op->getNickname(), (*it)->getName()), 0);
 		return ;
 	}
 	(*it)->updateFlag(cmd.second, *usrIt);
