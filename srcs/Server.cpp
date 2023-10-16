@@ -228,6 +228,8 @@ void Server::connexionLost(int i)
 
 void Server::changeModeChannel(std::pair<Command, std::string>cmd, int i, User *op)
 {
+	if (isUserCorrectlyConnected(i, true) == false)
+		return ;
 	std::list<User *>::iterator usrIt = StaticFunctions::findByFd(_users, _socket[i]);
 	if (cmd.second == "")
 	{
@@ -253,6 +255,8 @@ void Server::changeModeChannel(std::pair<Command, std::string>cmd, int i, User *
 
 void Server::kickUser(std::pair<Command, std::string>cmd, int i)
 {
+	if (isUserCorrectlyConnected(i, true) == false)
+		return ;
 	std::list<User *>::iterator usrIt = StaticFunctions::findByFd(_users, _socket[i]);
 	std::vector<std::string> cmdSplit = Parser::SplitCmdNotLastParam(cmd.second, " ");
 	std::list<Channel*>::iterator chan = find(_channels.begin(), _channels.end(), cmdSplit[0]);
@@ -379,6 +383,8 @@ void Server::joinChannel(std::pair<Command, std::string>cmd, int i)
 
 void Server::leaveChannel(std::pair<Command, std::string>cmd, int i)
 {
+	if (isUserCorrectlyConnected(i, true) == false)
+		return ;
 	std::vector<std::string> cmdSplit = Parser::SplitCmd(cmd.second, " ");
 	std::list<User *>::iterator usrIt = StaticFunctions::findByFd(_users, _socket[i]);
 	std::list<Channel *>::iterator it = find(_channels.begin(), _channels.end(), cmdSplit[0]);
@@ -580,7 +586,7 @@ void	Server::setUsername(std::pair<Command, std::string>cmd, int i)
 
 void	Server::messageChannel(std::pair<Command, std::string>cmd, int i, User *op)
 {
-	if (op == NULL)
+	if (op == NULL || isUserCorrectlyConnected(i, true) == false)
 		return 	;
 	std::vector<std::string> cmdSplit = Parser::SplitCmd(cmd.second, " ");
 	if (cmdSplit[0][0] != '#')
@@ -606,7 +612,7 @@ void	Server::messageChannel(std::pair<Command, std::string>cmd, int i, User *op)
 
 void Server::inviteUser(std::pair<Command, std::string> cmd, int i, User *op)
 {
-	if (op == NULL)
+	if (op == NULL || isUserCorrectlyConnected(i, true) == false)
 		return 	;
 	std::vector<std::string> cmdSplit = Parser::SplitCmd(cmd.second, " ");
 	if (cmdSplit.size() < 2)
@@ -632,6 +638,8 @@ void Server::inviteUser(std::pair<Command, std::string> cmd, int i, User *op)
 
 void Server::setTopic(std::pair<Command, std::string>cmd, int i)
 {
+	if (isUserCorrectlyConnected(i, true) == false)
+		return ;
 	std::vector<std::string> cmdSplit = Parser::SplitCmd(cmd.second, " ");
 	std::list<User *>::iterator currentUser = StaticFunctions::findByFd(_users, _socket[i]);
 	Channel * myChan = getChannel(cmdSplit[0]);

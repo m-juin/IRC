@@ -145,16 +145,11 @@ bool User::addFlag(std::size_t channelID, char flag)
 	flagsPair::iterator it = getFlagsIndex(channelID);
 	if (it == _channelsFlags.end())
 	{
-		// Shouldn't come here, wrong message anyway
-		//std::cerr << "Error: No perm for channel " << channelID << std::endl;
-		//it->second += flag;
 		return true; 
 	}
 	std::size_t search = it->second.find(flag, 0);
 	if (search != it->second.npos)
 	{
-		// Not if we send a message here
-		std::cerr << "Error: User already have flag '" << flag << "'!" << std::endl;
 		return false; 
 	}
 	it->second += flag;
@@ -166,15 +161,11 @@ bool User::rmFlag(std::size_t channelID, char flag)
 	flagsPair::iterator it = getFlagsIndex(channelID);
 	if (it == _channelsFlags.end())
 	{
-		// Shouldn't come here, wrong message anyway
-		//std::cerr << "Error: No perm for channel " << channelID << std::endl;
 		return false; 
 	}
 	std::size_t search = it->second.find(flag, 0);
 	if (search == it->second.npos)
 	{
-		// Not if we send a message here
-		//std::cerr << "Error: User not have flag '" << flag << "'!" << std::endl;
 		return false; 
 	}
 	it->second.erase(search, 1);
