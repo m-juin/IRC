@@ -272,7 +272,10 @@ void Server::kickUser(std::pair<Command, std::string>cmd, int i)
 	}
 	(*chan)->kickUser((*usrIt), cmdSplit);
 	if ((*chan)->getUsers().empty())
+	{
+		delete (*chan);
 		_channels.erase(chan);
+	}
 	
 }
 
@@ -400,8 +403,8 @@ void Server::leaveChannel(std::pair<Command, std::string>cmd, int i)
 			reason = "Leaving";
 		else
 			reason = cmdSplit[1];
-		if ((*usrIt)->disconnectChannel(*it) == true)
-			(*it)->sendToEveryuser(":" + (*usrIt)->getNickname() + " PART " + (*it)->getName() + " " + reason);
+		(*it)->sendToEveryuser(":" + (*usrIt)->getNickname() + " PART " + (*it)->getName() + " " + reason);
+		(*usrIt)->disconnectChannel(*it);
 	}
 	if ((*it)->getUsers().empty())
 	{
