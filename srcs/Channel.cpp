@@ -216,6 +216,11 @@ void	Channel::updateFlag(std::string cmd, User *op)
 			StaticFunctions::SendToFd(op->getFd(), ERR_NEEDMOREPARAMS(op->getNickname(), static_cast<std::string>("MODE")), 0);
 			return	;
 		}
+		else if (std::find(_users.begin(), _users.end(), flags[2]) == _users.end())
+		{
+			StaticFunctions::SendToFd(op->getFd(), ERR_NOSUCHNICK(flags[2]), 0);
+			return ;
+		}
 		if (flags[1][0] == '+')
 			addOperator(op, flags[2]);
 		else if (flags[1][0] == '-')
