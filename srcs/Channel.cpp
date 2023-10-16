@@ -312,10 +312,7 @@ void	Channel::rmInviteUser(User *target)
 {
 	std::list<User * >::iterator usrIt = StaticFunctions::findByFd(this->_invitedUsers, target->getFd());
 	if(usrIt == _invitedUsers.end())
-	{
-		std::cerr << "No user invited on channel!" << std::endl;
 		return ;
-	}
 	_invitedUsers.erase(usrIt);
 }
 
