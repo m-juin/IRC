@@ -37,9 +37,9 @@ class Channel {
 		void	updateFlag(std::string cmd, User *op);
 
 		void	addFlag(char flag);
-		void	addUser(User *user);
+		void	addUser(User *user, int opState);
 		void	addOperator(User *op, std::string &name);
-		void	connectToChannel(User *user);
+		void	connectToChannel(User *user, int opState);
 		
 		void	rmFlag(char flag, User *op);
 		void	kickUser(User *op, std::vector<std::string> args);
