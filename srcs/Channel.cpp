@@ -240,7 +240,7 @@ void	Channel::updateFlag(std::string cmd, User *op)
 				return	;
 			}
 			else
-				setUserLimit(i);
+				setUserLimit(i + 1);
 		}
 	}
 	else if (flags[1][1] == 'k')
