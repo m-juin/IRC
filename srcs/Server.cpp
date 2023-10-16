@@ -272,6 +272,9 @@ void Server::quitServer(std::pair<Command, std::string>cmd, int i)
 		return	;
 	}
 	std::list<User *>::iterator usrIt = StaticFunctions::findByFd(_users, _socket[i]);
+	std::list<Channel *>::iterator chanIt = _channels.begin();
+	for (; chanIt != this->_channels.end(); chanIt++)
+		(*chanIt)->rmInviteUser(*usrIt);
 	while ((*usrIt)->getNbChannel() > 0)
 	{
 		std::size_t id = (*usrIt)->getChanId();
