@@ -272,8 +272,10 @@ void Server::kickUser(std::pair<Command, std::string>cmd, int i)
 	}
 	(*chan)->kickUser((*usrIt), cmdSplit);
 	if ((*chan)->getUsers().empty())
+	{
+		delete(*chan);
 		_channels.erase(chan);
-	
+	}	
 }
 
 void Server::quitServer(std::pair<Command, std::string>cmd, int i)
