@@ -238,6 +238,11 @@ void	Channel::updateFlag(std::string cmd, User *op)
 		if (flags[1][0] == '+')
 		{
 			char *end = NULL;
+			if (flags[2].size() > 4)
+			{
+				StaticFunctions::SendToFd(op->getFd(), ":127.0.0.1 502 " + op->getNickname() + " " + _name + " :+l need number", 0);
+				return	;
+			}
 			long i = std::strtol(flags[2].c_str(), &end, 10);
 			if (end[0] != 0 || i > 1000 || i < 0 || errno == ERANGE)
 			{
