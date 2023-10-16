@@ -574,7 +574,8 @@ void	Server::messageChannel(std::pair<Command, std::string>cmd, int i, User *op)
 			StaticFunctions::SendToFd(_socket[i], ERR_NOSUCHNICK(cmdSplit[0]), 0);
 			return	;
 		}
-		StaticFunctions::SendToFd((*it)->getFd(), ":" + op->getNickname() + " PRIVMSG " + cmd.second, 0);
+		if ((*it)->getFd() != op->getFd())
+			StaticFunctions::SendToFd((*it)->getFd(), ":" + op->getNickname() + " PRIVMSG " + cmd.second, 0);
 		return	;
 	}
 	Channel * myChan = getChannel(cmdSplit[0]);
