@@ -53,6 +53,7 @@ class Server {
 		void inviteUser(std::pair<Command, std::string>cmd, int i, User *op);
 		void leaveChannel(std::pair<Command, std::string>cmd, int i);
 		void sendToEveryChannel(std::string msg, User *usr);
+		void sendToEveryUser(std::string msg);
 
 		void closeConnexionUser(int i);
 

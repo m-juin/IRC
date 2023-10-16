@@ -498,6 +498,16 @@ void Server::sendToEveryChannel(std::string msg, User *usr)
 	}
 }
 
+void Server::sendToEveryUser(std::string msg)
+{
+	std::list<User*>::iterator it = _users.begin();
+	std::list<User*>::iterator ite = _users.end();
+	for (; it != ite; it++)
+	{
+		StaticFunctions::SendToFd((*it)->getFd(), msg, 0);
+	}
+}
+
 void	Server::setNickname(std::pair<Command, std::string>cmd, int i)
 {
 	if (isUserAuthenticated(i, true) == false)
@@ -526,12 +536,8 @@ void	Server::setNickname(std::pair<Command, std::string>cmd, int i)
 			StaticFunctions::SendToFd(_socket[i], RPL_WELCOME((std::string)">ALL", (*it)->getNickname()), 0);
 		return ;
 	}
-	StaticFunctions::SendToFd(_socket[i], ":" + (*it)->getNickname() + " NICK " + cmd.second, 0);
+	sendToEveryUser(":" + (*it)->getNickname() + " NICK " + cmd.second);
 	(*it)->setNickname(cmd.second);
-	sendToEveryChannel(":" + (*it)->getNickname() + " NICK " + cmd.second, *it);
-	//(*it)->
-	/*if(isUserCorrectlyConnected(i, false) == false)
-		StaticFunctions::SendToFd(_socket[i], RPL_WELCOME((std::string)">ALL", (*it)->getNickname()), 0);*/
 }
 
 void	Server::setUsername(std::pair<Command, std::string>cmd, int i)
