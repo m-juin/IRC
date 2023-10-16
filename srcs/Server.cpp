@@ -229,6 +229,11 @@ void Server::connexionLost(int i)
 void Server::changeModeChannel(std::pair<Command, std::string>cmd, int i, User *op)
 {
 	std::list<User *>::iterator usrIt = StaticFunctions::findByFd(_users, _socket[i]);
+	if (cmd.second == "")
+	{
+		StaticFunctions::SendToFd(op->getFd(), ERR_NEEDMOREPARAMS(op->getNickname(), static_cast<std::string>("MODE")), 0);
+		return ;
+	}
 	std::vector<std::string> cmdSplit = Parser::SplitCmd(cmd.second, " ");
 	std::list<Channel *>::iterator it = find(_channels.begin(), _channels.end(), cmdSplit[0]);
 	if (it == _channels.end())
