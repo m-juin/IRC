@@ -537,7 +537,7 @@ void	Server::setNickname(std::pair<Command, std::string>cmd, int i)
 	(*it)->setNickname(cmd.second);
 	sendToEveryChannel(":" + (*it)->getNickname() + " NICK " + cmd.second, *it);
 	//(*it)->
-	/*if(isUserCorrectlyConnected(i, false) == false)
+	/*if(isUserCorrectlyConnected(i, false) == true)
 		StaticFunctions::SendToFd(_socket[i], RPL_WELCOME((std::string)">ALL", (*it)->getNickname()), 0);*/
 }
 
