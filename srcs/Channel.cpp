@@ -166,6 +166,14 @@ bool	Channel::isUserOp(User *op)
 	return true;
 }
 
+bool	Channel::isInChannel(User *usr)
+{
+	std::list<User *>::iterator usrIt = find(_users.begin(), _users.end(), usr);
+	if (usrIt == _users.end())
+		return	false;
+	return	true;
+}
+
 bool Channel::isFlagPresent(char flag)
 {
 	if (_channelMod.find(flag) == _channelMod.npos)

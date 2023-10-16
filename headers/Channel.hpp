@@ -55,6 +55,7 @@ class Channel {
 		bool	isUserOp(User *op);
 		bool	isFlagPresent(char flag);
 		void	kickOneUser(User *op, std::string name, std::string reason);
+		bool	isInChannel(User *usr);
 		
 	private:
 		std::size_t		_id;
