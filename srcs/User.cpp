@@ -147,13 +147,14 @@ bool User::addFlag(std::size_t channelID, char flag)
 	{
 		// Shouldn't come here, wrong message anyway
 		//std::cerr << "Error: No perm for channel " << channelID << std::endl;
-		return false; 
+		//it->second += flag;
+		return true; 
 	}
 	std::size_t search = it->second.find(flag, 0);
 	if (search != it->second.npos)
 	{
 		// Not if we send a message here
-		//std::cerr << "Error: User already have flag '" << flag << "'!" << std::endl;
+		std::cerr << "Error: User already have flag '" << flag << "'!" << std::endl;
 		return false; 
 	}
 	it->second += flag;

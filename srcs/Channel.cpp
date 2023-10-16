@@ -14,9 +14,7 @@ Channel::Channel(std::size_t id, std::string name, User *user)
 	this->_name = name;
 	this->_channelMod = "";
 	this->_usersLimit = 0;
-	//user->connectChannel(this->_id);
-	user->addFlag(_id, 'o');
-	addUser(user);	
+	addUser(user, 1);	
 }
 
 Channel::~Channel()
@@ -116,11 +114,13 @@ void		Channel::sendToEveryuserNotHimself(std::string toSend, User *him)
 	}
 }
 
-void		Channel::connectToChannel(User *user)
+void		Channel::connectToChannel(User *user, int opState)
 {
 	if (std::find(this->_users.begin(), this->_users.end(), user) != this->_users.end())
 		return ;
 	user->connectChannel(this->_id);
+	if (opState == 1)
+		user->addFlag(_id, 'o');
 	this->_users.push_back(user);
 	std::list<User *>::iterator it = _users.begin();
 	std::string usersNick;
@@ -137,11 +137,11 @@ void		Channel::connectToChannel(User *user)
 	StaticFunctions::SendToFd(user->getFd(), RPL_ENDOFNAMES(user->getNickname(), _name), 0);
 }
 
-void		Channel::addUser(User *user)
+void		Channel::addUser(User *user, int opState)
 {
 	if (this->_channelMod.find('i') == std::string::npos)
 	{
-		connectToChannel(user);
+		connectToChannel(user, opState);
 	}
 	else
 	{
@@ -151,7 +151,7 @@ void		Channel::addUser(User *user)
 		else
 		{
 			_invitedUsers.erase(it);
-			connectToChannel(user);
+			connectToChannel(user, opState);
 		}
 	}
 }

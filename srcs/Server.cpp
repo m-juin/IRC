@@ -340,9 +340,9 @@ void Server::joinChannel(std::pair<Command, std::string>cmd, int i)
 			return;
 		}
 		if ((*it)->getUserLimit() == 0)
-			(*it)->addUser(*usrIt);
+			(*it)->addUser(*usrIt, 0);
 		else if ((*it)->getUserLimit() != 0 && (*it)->getUsers().size() + 1 < (*it)->getUserLimit())
-			(*it)->addUser(*usrIt);
+			(*it)->addUser(*usrIt, 0);
 		else
 			StaticFunctions::SendToFd(_socket[i], ERR_CHANNELISFULL((*usrIt)->getNickname(), cmd.second), 0);
 	}
