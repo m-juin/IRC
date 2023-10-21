@@ -229,7 +229,10 @@ void	Channel::updateFlag(std::string cmd, User *op)
 	else if (flags[1][1] == 'l')
 	{
 		if (flags[1][0] == '-')
+		{
 			setUserLimit(0);
+			rmFlag('l', op);
+		}
 		else if (flags.size() != 3)
 		{
 			StaticFunctions::SendToFd(op->getFd(), ERR_NEEDMOREPARAMS(op->getNickname(), static_cast<std::string>("MODE")), 0);
@@ -250,7 +253,11 @@ void	Channel::updateFlag(std::string cmd, User *op)
 				return	;
 			}
 			else
+			{
 				setUserLimit(i + 1);
+				addFlag('l');
+			}
+			
 		}
 	}
 	else if (flags[1][1] == 'k')
@@ -259,6 +266,7 @@ void	Channel::updateFlag(std::string cmd, User *op)
 		{
 			std::string empty = "";
 			setPassword(empty);
+			rmFlag('k', op);
 		}
 		else if (flags.size() != 3)
 		{
@@ -266,7 +274,10 @@ void	Channel::updateFlag(std::string cmd, User *op)
 			return	;
 		}
 		if (flags[1][0] == '+')
+		{
 			setPassword(flags[2]);
+			addFlag('k');
+		}
 	}
 	else if (flags[1][1] == 'i')
 	{
